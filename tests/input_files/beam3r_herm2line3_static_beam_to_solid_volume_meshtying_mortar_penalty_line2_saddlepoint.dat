@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------TITLE
-Description: Simulate a beam coupled to a solid via penalty mortar coupling.
+Description: Simulate a beam coupled to a solid via penalty mortar coupling using saddle point formulation.
              The shape functions for the Lagrange multplicators are line2.
 --------------------------------------------------------------------PROBLEM SIZE
 DIM                                   3
@@ -55,6 +55,7 @@ MODELEVALUATOR                        Standard
 CONTACT_DISCRETIZATION                mortar
 MORTAR_SHAPE_FUNCTION                 line2
 CONSTRAINT_STRATEGY                   penalty
+SADDLE_POINT_FORMULATION              no
 PENALTY_PARAMETER                     10
 GEOMETRY_PAIR_STRATEGY                segmentation
 GEOMETRY_PAIR_SEGMENTATION_SEARCH_POINTS           2
@@ -68,13 +69,13 @@ SEGMENTATION                          yes
 INTEGRATION_POINTS                    yes
 --------------------------------------------------------------RESULT DESCRIPTION
 // Displacements at a solid node.
-STRUCTURE DIS structure NODE 175 QUANTITY dispx VALUE -4.57882749223645247e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 175 QUANTITY dispy VALUE -4.90627874498921271e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 175 QUANTITY dispz VALUE 2.32330318631286525e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 175 QUANTITY dispx VALUE -4.57780181127378838e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 175 QUANTITY dispy VALUE -4.99437938601516238e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 175 QUANTITY dispz VALUE 2.32320426889857101e+00 TOLERANCE 1e-10
 // Displacements at a beam node.
-STRUCTURE DIS structure NODE 204 QUANTITY dispx VALUE -2.45242805062737074e-01 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 204 QUANTITY dispy VALUE -2.63939733702232074e-02 TOLERANCE 1e-10
-STRUCTURE DIS structure NODE 204 QUANTITY dispz VALUE 1.90067729494861815e+00 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 204 QUANTITY dispx VALUE -2.45169239738679101e-01 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 204 QUANTITY dispy VALUE -2.71493989526840028e-02 TOLERANCE 1e-10
+STRUCTURE DIS structure NODE 204 QUANTITY dispz VALUE 1.90057965870567602e+00 TOLERANCE 1e-10
 -----------------------------------------------------------------------MATERIALS
 MAT 1 MAT_Struct_StVenantKirchhoff YOUNG 1 NUE 0.0 DENS 0.0
 MAT 2 MAT_BeamReissnerElastHyper YOUNG 100 POISSONRATIO 0.0 DENS 0.0 CROSSAREA 0.007853981633974483 SHEARCORR 1 MOMINPOL 9.817477042468105e-06 MOMIN2 4.9087385212340526e-06 MOMIN3 4.9087385212340526e-06
