@@ -20,14 +20,10 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
-#include "4C_linalg_vector.hpp"
-#include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
-#include <Epetra_Vector.h>
-#include <Teuchos_RCPDecl.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
