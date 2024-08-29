@@ -186,6 +186,15 @@ namespace BeamInteraction
      */
     double get_energy() const;
 
+    void assemble_force(Solid::TimeInt::BaseDataGlobalState& gstate, Epetra_Vector& f,
+        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
+        const;
+
+    void assemble_stiff(Solid::TimeInt::BaseDataGlobalState& gstate,
+        Core::LinAlg::SparseOperator& jac,
+        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
+        const;
+
    protected:
     /**
      * \brief Throw an error if setup was not called on the object prior to this function call.
@@ -296,12 +305,14 @@ namespace BeamInteraction
     //! Row map of the additional Lagrange multiplier DOFs for rotations.
     std::shared_ptr<Epetra_Map> lambda_dof_rowmap_rotations_;
 
+   public:
     //! Row map of the additional Lagrange multiplier DOFs.
     std::shared_ptr<Epetra_Map> lambda_dof_rowmap_;
 
     //! Column map of the additional Lagrange multiplier DOFs.
     std::shared_ptr<Epetra_Map> lambda_dof_colmap_;
 
+   protected:
     //! Row map of the beam DOFs.
     std::shared_ptr<Epetra_Map> beam_dof_rowmap_;
 
