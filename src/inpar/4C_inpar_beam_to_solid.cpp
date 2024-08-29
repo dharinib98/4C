@@ -77,6 +77,9 @@ void Inpar::BeamToSolid::set_valid_parameters(Teuchos::ParameterList& list)
             BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         &beam_to_solid_volume_mestying);
 
+    Core::Utils::bool_parameter("SADDLE_POINT_FORMULATION", "No",
+        "Enable / disable saddle point formulation.", &beam_to_solid_volume_mestying);
+
     setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
         "Shape function for the mortar Lagrange-multipliers",
         tuple<std::string>("none", "line2", "line3", "line4"),
