@@ -113,8 +113,6 @@ namespace Solid
       void predict(const Inpar::Solid::PredEnum& pred_type) override { return; };
 
       //! derived
-      void run_pre_compute_x(const Epetra_Vector& xold, Epetra_Vector& dir_mutable,
-          const NOX::Nln::Group& curr_grp) override;
       void run_pre_compute_x(const Core::LinAlg::Vector<double>& xold,
           Core::LinAlg::Vector<double>& dir_mutable, const NOX::Nln::Group& curr_grp) override;
 
