@@ -51,6 +51,7 @@ void Inpar::BeamToSolid::beam_to_solid_interaction_get_string(
  */
 void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::InputSpec>& list)
 {
+  using Teuchos::setStringToIntegralParameter;
   using Teuchos::tuple;
 
   Core::Utils::SectionSpecs beaminteraction{"BEAM INTERACTION"};
@@ -77,6 +78,14 @@ void Inpar::BeamToSolid::set_valid_parameters(std::map<std::string, Core::IO::In
             BeamToSolidConstraintEnforcement::none, BeamToSolidConstraintEnforcement::penalty),
         beam_to_solid_volume_mestying);
 
+    Core::Utils::bool_parameter("SADDLE_POINT_FORMULATION", "No",
+        "Enable / disable saddle point formulation.", &beam_to_solid_volume_mestying);
+
+    Core::Utils::bool_parameter("SADDLE_POINT_FORMULATION", "No",
+        "Enable / disable saddle point formulation.", &beam_to_solid_volume_mestying);
+
+    setStringToIntegralParameter<BeamToSolidMortarShapefunctions>("MORTAR_SHAPE_FUNCTION", "none",
+        "Shape function for the mortar Lagrange-multipliers",
     Core::Utils::string_to_integral_parameter<BeamToSolidMortarShapefunctions>(
         "MORTAR_SHAPE_FUNCTION", "none", "Shape function for the mortar Lagrange-multipliers",
         tuple<std::string>("none", "line2", "line3", "line4"),
