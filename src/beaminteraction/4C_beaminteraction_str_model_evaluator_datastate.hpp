@@ -373,6 +373,8 @@ namespace Solid
 
       Teuchos::RCP<Epetra_FEVector> lambda_;
 
+      Teuchos::RCP<Epetra_FEVector> lambda_;
+
       ///@}
     };
   }  // namespace ModelEvaluator
