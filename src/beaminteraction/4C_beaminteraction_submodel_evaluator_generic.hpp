@@ -246,19 +246,7 @@ namespace BeamInteraction
 
       virtual void assemble_stiff(Core::LinAlg::SparseOperator& jac){};
 
-      virtual Teuchos::RCP<Epetra_Map> get_lagrange_map() { return Teuchos::null; }
-
-      virtual void assemble_force(Epetra_Vector& f){};
-
-      virtual void assemble_stiff(Core::LinAlg::SparseOperator& jac){};
-
-      virtual Teuchos::RCP<Epetra_Map> get_lagrange_map() { return Teuchos::null; }
-
-      virtual void assemble_force(Epetra_Vector& f){};
-
-      virtual void assemble_stiff(Core::LinAlg::SparseOperator& jac){};
-
-      virtual Teuchos::RCP<Epetra_Map> get_lagrange_map() { return Teuchos::null; }
+      virtual std::shared_ptr<Epetra_Map> get_lagrange_map() { return nullptr; }
 
       virtual void assemble_force(Epetra_Vector& f){};
 
