@@ -20,6 +20,8 @@
 #include "4C_global_data.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
+#include "4C_linalg_vector.hpp"
+#include "4C_structure_new_timint_base.hpp"
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_utils_exceptions.hpp"
 
@@ -653,8 +655,8 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
   }
 
   // Add the force and stiffness contributions that are assembled directly by the pairs.
-  auto lambda_col = Teuchos::rcp(new Epetra_Vector(*lambda_dof_colmap_));
-  Core::LinAlg::export_to(*lambda, *lambda_col);
+  Core::LinAlg::Vector<double> lambda_col(*lambda_dof_colmap_);
+  Core::LinAlg::export_to(*lambda, lambda_col);
 
   std::cout << "\nLambda due to penalty: \n";
   lambda->Print(std::cout);
@@ -758,7 +760,7 @@ BeamInteraction::BeamToSolidMortarManager::penalty_invert_kappa() const
 
 void BEAMINTERACTION::BeamToSolidMortarManager::assemble_force(
     Solid::TimeInt::BaseDataGlobalState& gstate, Epetra_Vector& f,
-    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
   // // Lambda stuff?
   // auto ll = Epetra_Vector(*lagrange_map_);
@@ -783,8 +785,9 @@ void BEAMINTERACTION::BeamToSolidMortarManager::assemble_force(
   // Epetra_Vector meins(*maplambda, true);
   // meins.ReplaceGlobalValue(103, 0, 69.69);
 
-  auto tmp = Epetra_Vector(f.Map());
-  Core::LinAlg::export_to(*constraint_, tmp);
+  auto tmp = Core::LinAlg::Vector<double>(f.Map());
+  Core::LinAlg::VectorView a_view_const(*constraint_);
+  Core::LinAlg::export_to(a_view_const, tmp);
 
 
 
@@ -819,14 +822,15 @@ void BEAMINTERACTION::BeamToSolidMortarManager::assemble_force(
 
 void BEAMINTERACTION::BeamToSolidMortarManager::assemble_stiff(
     Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::SparseOperator& jac,
-    const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
+    const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
   // Set penalty entry
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
-  auto kappa_epetra = Epetra_Vector(*lambda_dof_rowmap_);
-  Core::LinAlg::export_to(*kappa_, kappa_epetra);
+  auto kappa_vector = Core::LinAlg::Vector<double>(*lambda_dof_rowmap_);
+  Core::LinAlg::VectorView a_view_const(*kappa_);
+  Core::LinAlg::export_to(a_view_const, kappa_vector);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat2 =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(kappa_epetra));
+      Teuchos::rcp(new Core::LinAlg::SparseMatrix(kappa_vector));
   kappa_penalty_inv_mat2->scale(-1.0 / penalty_translation);
   kappa_penalty_inv_mat2->complete();
 
