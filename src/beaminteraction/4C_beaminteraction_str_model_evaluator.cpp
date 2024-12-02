@@ -823,9 +823,11 @@ void Solid::ModelEvaluator::BeamInteraction::read_restart(Core::IO::Discretizati
 }
 
 void Solid::ModelEvaluator::BeamInteraction::run_pre_compute_x(
-    const Epetra_Vector& xold, Epetra_Vector& dir_mutable, const NOX::Nln::Group& curr_grp)
+    const Core::LinAlg::Vector<double>& xold, Core::LinAlg::Vector<double>& dir_mutable,
+    const NOX::Nln::Group& curr_grp)
 {
-  Core::LinAlg::export_to(dir_mutable, *ia_state_ptr_->get_lambda());
+  Core::LinAlg::VectorView a_view_const(*ia_state_ptr_->get_lambda());
+  Core::LinAlg::export_to(dir_mutable, a_view_const);
 };
 
 /*----------------------------------------------------------------------------*

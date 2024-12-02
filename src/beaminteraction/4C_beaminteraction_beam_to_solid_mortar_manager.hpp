@@ -44,6 +44,7 @@ namespace BEAMINTERACTION
 namespace Core::LinAlg
 {
   class SparseMatrix;
+  class SparseOperator;
 }  // namespace Core::LinAlg
 
 
@@ -187,12 +188,12 @@ namespace BEAMINTERACTION
     double get_energy() const;
 
     void assemble_force(Solid::TimeInt::BaseDataGlobalState& gstate, Epetra_Vector& f,
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
         const;
 
     void assemble_stiff(Solid::TimeInt::BaseDataGlobalState& gstate,
         Core::LinAlg::SparseOperator& jac,
-        const Teuchos::RCP<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
+        const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
         const;
 
    protected:
