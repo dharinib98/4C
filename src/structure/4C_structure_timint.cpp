@@ -417,7 +417,7 @@ void Solid::TimInt::prepare_beam_contact(const Teuchos::ParameterList& sdynparam
   // some parameters
   const Teuchos::ParameterList& beamcontact = Global::Problem::instance()->beam_contact_params();
   auto strategy =
-      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(beamcontact, "BEAMS_STRATEGY");
+      Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(beamcontact, "BEAMS_STRATEGY");
 
   // conditions for potential-based beam interaction
   std::vector<Core::Conditions::Condition*> beampotconditions(0);
@@ -425,7 +425,7 @@ void Solid::TimInt::prepare_beam_contact(const Teuchos::ParameterList& sdynparam
 
   // only continue if beam contact unmistakably chosen in input file or beam potential conditions
   // applied
-  if (strategy != Inpar::BEAMCONTACT::bstr_none or (int) beampotconditions.size() != 0)
+  if (strategy != Inpar::BeamContact::bstr_none or (int) beampotconditions.size() != 0)
   {
     // store integration parameter alphaf into beamcman_ as well
     // (for all cases except OST, GenAlpha and GEMM this is zero)
@@ -2632,8 +2632,8 @@ void Solid::TimInt::output_contact()
     // global quantities (sum over all processors)
     for (int i = 0; i < 3; ++i)
     {
-      cmtbridge_->get_comm().SumAll(&sumangmom[i], &angmom[i], 1);
-      cmtbridge_->get_comm().SumAll(&sumlinmom[i], &linmom[i], 1);
+      Core::Communication::sum_all(&sumangmom[i], &angmom[i], 1, cmtbridge_->get_comm());
+      Core::Communication::sum_all(&sumlinmom[i], &linmom[i], 1, cmtbridge_->get_comm());
     }
 
     //--------------------------Calculation of total kinetic energy
@@ -3010,7 +3010,7 @@ Inpar::Solid::ConvergenceStatus Solid::TimInt::perform_error_action(
       double proc_randnum_get = ((double)rand() / (double)RAND_MAX);
       double proc_randnum = proc_randnum_get;
       double randnum = 1.0;
-      discret_->get_comm().SumAll(&proc_randnum, &randnum, 1);
+      Core::Communication::sum_all(&proc_randnum, &randnum, 1, discret_->get_comm());
       const double numproc = Core::Communication::num_mpi_ranks(discret_->get_comm());
       randnum /= numproc;
       if (rand_tsfac_ > 1.0)

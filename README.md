@@ -4,6 +4,14 @@
 
 <div align="center">
 
+[![website](./utilities/assets/badges/website_badge.svg)](https://4C-multiphysics.org)
+[![docs/rtd](./utilities/assets/badges/documentation_readthedocs.svg)](https://4c-multiphysics.github.io/4C/readthedocs/)
+[![docs/doxygen](./utilities/assets/badges/documentation_doxygen.svg)](https://4c-multiphysics.github.io/4C/doxygen/)
+
+</div>
+
+<div align="center">
+
 [![workflows/checkcode](https://github.com/4C-multiphysics/4C/actions/workflows/checkcode.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/checkcode.yml?query=branch%3Amain)
 [![workflows/buildtest](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/buildtest.yml?query=branch%3Amain)
 [![workflows/nightly_tests](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml/badge.svg?branch=main)](https://github.com/4C-multiphysics/4C/actions/workflows/nightly_tests.yml?query=branch%3Amain)
@@ -58,7 +66,7 @@ Look into the CMake presets in `presets/` or ask your colleagues for further inf
 Some helper scripts to install these TPLs can be found in `dependencies/`.
 
 Additional information can be found in
-the [user documentation](https://baci.pages.gitlab.lrz.de/baci/readthedocs/4Csetup.html#external-dependencies).
+the [user documentation](https://4c-multiphysics.github.io/4C/readthedocs/4Csetup.html#external-dependencies).
 
 ## Getting up and running
 
@@ -127,10 +135,10 @@ file(s).
 A collection of working `.dat` files is located under `tests/input_files/` in the source code repository.
 
 Input files (`*.dat`) can be generated through various mechanisms.
-Please consult our [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) for further information and detailed instructions.
+Please consult our [user guide](https://4c-multiphysics.github.io/4C/readthedocs/index.html) for further information and detailed instructions.
 
 4C can write its simulation output in different formats.
-The [user guide](https://baci.pages.gitlab.lrz.de/baci/readthedocs/index.html) outlines the different output format and their necessary steps to actually view the results.
+The [user guide](https://4c-multiphysics.github.io/4C/readthedocs/index.html) outlines the different output format and their necessary steps to actually view the results.
 
 ## Where to Ask Questions
 

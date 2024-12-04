@@ -124,14 +124,14 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
   set_min_max_ele_radius();
 
   // Get search box increment from input file
-  searchboxinc_ = BEAMINTERACTION::determine_searchbox_inc(sbeamcontact_);
+  searchboxinc_ = BeamInteraction::determine_searchbox_inc(sbeamcontact_);
 
   if (searchboxinc_ < 0.0)
     FOUR_C_THROW("Choose a positive value for the searchbox extrusion factor BEAMS_EXTVAL!");
 
   // initialize octtree for contact search
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
-      Inpar::BEAMCONTACT::boct_none)
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(sbeamcontact_, "BEAMS_OCTREE") !=
+      Inpar::BeamContact::boct_none)
   {
     if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
       std::cout << "BTB-CO penalty         = " << currentpp_ << std::endl;
@@ -156,57 +156,57 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
 
   if (!Core::Communication::my_mpi_rank(pdiscret_.get_comm()))
   {
-    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
-        Inpar::BEAMCONTACT::bstr_penalty)
+    if (Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+        Inpar::BeamContact::bstr_penalty)
       std::cout << "Strategy                 Penalty" << std::endl;
-    else if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(
-                 sbeamcontact_, "BEAMS_STRATEGY") == Inpar::BEAMCONTACT::bstr_gmshonly)
+    else if (Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(
+                 sbeamcontact_, "BEAMS_STRATEGY") == Inpar::BeamContact::bstr_gmshonly)
       std::cout << "Strategy                 Gmsh Only" << std::endl;
     else
       FOUR_C_THROW("Unknown strategy for beam contact!");
 
-    switch (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
+    switch (Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
         sbeamcontact_, "BEAMS_PENALTYLAW"))
     {
-      case Inpar::BEAMCONTACT::pl_lp:
+      case Inpar::BeamContact::pl_lp:
       {
         std::cout << "Regularization Type      Linear penalty law!" << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_qp:
+      case Inpar::BeamContact::pl_qp:
       {
         std::cout << "Regularization Type      Quadratic penalty law!" << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_lnqp:
+      case Inpar::BeamContact::pl_lnqp:
       {
         std::cout << "Regularization Type      Linear penalty law with quadratic regularization "
                      "for negative gaps!"
                   << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_lpqp:
+      case Inpar::BeamContact::pl_lpqp:
       {
         std::cout << "Regularization Type      Linear penalty law with quadratic regularization "
                      "for positive gaps!"
                   << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_lpcp:
+      case Inpar::BeamContact::pl_lpcp:
       {
         std::cout << "Regularization Type      Linear penalty law with cubic regularization for "
                      "positive gaps!"
                   << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_lpdqp:
+      case Inpar::BeamContact::pl_lpdqp:
       {
         std::cout << "Regularization Type      Linear penalty law with double quadratic "
                      "regularization for positive gaps!"
                   << std::endl;
         break;
       }
-      case Inpar::BEAMCONTACT::pl_lpep:
+      case Inpar::BeamContact::pl_lpep:
       {
         std::cout << "Regularization Type      Linear penalty law with exponential regularization "
                      "for positive gaps!"
@@ -215,8 +215,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
       }
     }
 
-    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::PenaltyLaw>(
-            sbeamcontact_, "BEAMS_PENALTYLAW") != Inpar::BEAMCONTACT::pl_lp)
+    if (Teuchos::getIntegralValue<Inpar::BeamContact::PenaltyLaw>(
+            sbeamcontact_, "BEAMS_PENALTYLAW") != Inpar::BeamContact::pl_lp)
     {
       std::cout << "Regularization Params    BEAMS_PENREGPARAM_G0 = "
                 << sbeamcontact_.get<double>("BEAMS_PENREGPARAM_G0", -1.0)
@@ -228,8 +228,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
                 << sbeamcontact_.get<double>("BEAMS_GAPSHIFTPARAM", 0.0) << std::endl;
     }
 
-    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
-        Inpar::BEAMCONTACT::bd_no)
+    if (Teuchos::getIntegralValue<Inpar::BeamContact::Damping>(sbeamcontact_, "BEAMS_DAMPING") ==
+        Inpar::BeamContact::bd_no)
       std::cout << "Damping                  No Contact Damping Force Applied!" << std::endl;
     else
     {
@@ -317,15 +317,15 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     {
       std::cout << "=============== Beam Potential-Based Interaction ===============" << std::endl;
 
-      switch (Teuchos::getIntegralValue<Inpar::BEAMPOTENTIAL::BeamPotentialType>(
+      switch (Teuchos::getIntegralValue<Inpar::BeamPotential::BeamPotentialType>(
           sbeampotential_, "BEAMPOTENTIAL_TYPE"))
       {
-        case Inpar::BEAMPOTENTIAL::beampot_surf:
+        case Inpar::BeamPotential::beampot_surf:
         {
           std::cout << "Potential Type:      Surface" << std::endl;
           break;
         }
-        case Inpar::BEAMPOTENTIAL::beampot_vol:
+        case Inpar::BeamPotential::beampot_vol:
         {
           std::cout << "Potential Type:      Volume" << std::endl;
           break;
@@ -346,8 +346,8 @@ CONTACT::Beam3cmanager::Beam3cmanager(Core::FE::Discretization& discret, double 
     searchradiuspot_ = sbeampotential_.get<double>("CUTOFFRADIUS", -1.0);
 
     // initialize octtree for search of potential-based interaction pairs
-    if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::OctreeType>(
-            sbeampotential_, "BEAMPOT_OCTREE") != Inpar::BEAMCONTACT::boct_none)
+    if (Teuchos::getIntegralValue<Inpar::BeamContact::OctreeType>(
+            sbeampotential_, "BEAMPOT_OCTREE") != Inpar::BeamContact::boct_none)
     {
       if (searchradiuspot_ <= 0)
         FOUR_C_THROW(
@@ -409,8 +409,8 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     Teuchos::ParameterList timeintparams, bool newsti, double time)
 {
   // get out of here if only interested in gmsh output
-  if (Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
-      Inpar::BEAMCONTACT::bstr_gmshonly)
+  if (Teuchos::getIntegralValue<Inpar::BeamContact::Strategy>(sbeamcontact_, "BEAMS_STRATEGY") ==
+      Inpar::BeamContact::bstr_gmshonly)
     return;
 
   // set time
@@ -553,7 +553,7 @@ void CONTACT::Beam3cmanager::evaluate(Core::LinAlg::SparseMatrix& stiffmatrix,
     Core::IO::cout(Core::IO::debug)
         << "      Evaluate Contact Pairs: " << t_end << " seconds. " << Core::IO::endl;
   double sumproc_evaluationtime = 0.0;
-  get_comm().SumAll(&t_end, &sumproc_evaluationtime, 1);
+  Core::Communication::sum_all(&t_end, &sumproc_evaluationtime, 1, get_comm());
   contactevaluationtime_ += sumproc_evaluationtime;
   t_start = Teuchos::Time::wallTime();
 
@@ -654,12 +654,12 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     Core::Nodes::Node* node = problem_discret().l_col_node(i);
     if (!node) FOUR_C_THROW("Cannot find node with lid %", i);
     std::shared_ptr<Core::Nodes::Node> newnode = std::shared_ptr<Core::Nodes::Node>(node->clone());
-    if (BEAMINTERACTION::Utils::is_beam_node(*newnode))
+    if (BeamInteraction::Utils::is_beam_node(*newnode))
     {
       bt_sol_discret().add_node(newnode);
       nodedofs[node->id()] = problem_discret().dof(0, node);
     }
-    else if (BEAMINTERACTION::Utils::is_rigid_sphere_node(*newnode))
+    else if (BeamInteraction::Utils::is_rigid_sphere_node(*newnode))
     {
       bt_sol_discret().add_node(newnode);
       nodedofs[node->id()] = problem_discret().dof(0, node);
@@ -681,8 +681,8 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     if (!ele) FOUR_C_THROW("Cannot find element with lid %", i);
     std::shared_ptr<Core::Elements::Element> newele =
         std::shared_ptr<Core::Elements::Element>(ele->clone());
-    if (BEAMINTERACTION::Utils::is_beam_element(*newele) or
-        BEAMINTERACTION::Utils::is_rigid_sphere_element(*newele))
+    if (BeamInteraction::Utils::is_beam_element(*newele) or
+        BeamInteraction::Utils::is_rigid_sphere_element(*newele))
     {
       bt_sol_discret().add_element(newele);
     }
@@ -764,7 +764,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // note that elements in ele1/ele2 already are in column (overlapping) map
     int lsize = (int)currele.size();
     int gsize = 0;
-    get_comm().SumAll(&lsize, &gsize, 1);
+    Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
     std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
@@ -842,7 +842,7 @@ void CONTACT::Beam3cmanager::init_beam_contact_discret()
     // note that elements in ele1/ele2 already are in column (overlapping) map
     int lsize = (int)currele.size();
     int gsize = 0;
-    get_comm().SumAll(&lsize, &gsize, 1);
+    Core::Communication::sum_all(&lsize, &gsize, 1, get_comm());
 
     std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator fool;
     for (fool = currele.begin(); fool != currele.end(); ++fool)
@@ -1001,8 +1001,8 @@ void CONTACT::Beam3cmanager::set_current_positions(
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMINTERACTION::Utils::is_beam_node(*node) and
-        !BEAMINTERACTION::Utils::is_beam_centerline_node(*node))
+    if (BeamInteraction::Utils::is_beam_node(*node) and
+        !BeamInteraction::Utils::is_beam_centerline_node(*node))
       continue;
 
     // get GIDs of this node's degrees of freedom
@@ -1042,13 +1042,13 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
     // TODO maybe this can be done in a more elegant way in the future
     /* check whether node is a beam node which is NOT used for centerline interpolation
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
-    if (BEAMINTERACTION::Utils::is_beam_node(*node) and
-        !BEAMINTERACTION::Utils::is_beam_centerline_node(*node))
+    if (BeamInteraction::Utils::is_beam_node(*node) and
+        !BeamInteraction::Utils::is_beam_centerline_node(*node))
       continue;
 
 
     // get nodal tangents for Kirchhoff elements
-    if (numnodalvalues_ == 2 and BEAMINTERACTION::Utils::is_beam_node(*node))
+    if (numnodalvalues_ == 2 and BeamInteraction::Utils::is_beam_node(*node))
     {
       // get GIDs of this node's degrees of freedom
       std::vector<int> dofnode = bt_sol_discret().dof(node);
@@ -1167,8 +1167,8 @@ void CONTACT::Beam3cmanager::set_state(std::map<int, Core::LinAlg::Matrix<3, 1>>
   }
   // Update also the interpolated tangents if the tangentsmoothing is activated for Reissner beams
   auto smoothing =
-      Teuchos::getIntegralValue<Inpar::BEAMCONTACT::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
-  if (smoothing != Inpar::BEAMCONTACT::bsm_none)
+      Teuchos::getIntegralValue<Inpar::BeamContact::Smoothing>(sbeamcontact_, "BEAMS_SMOOTHING");
+  if (smoothing != Inpar::BeamContact::bsm_none)
   {
     for (int i = 0; i < (int)pairs_.size(); ++i)
     {
@@ -1258,7 +1258,7 @@ void CONTACT::Beam3cmanager::evaluate_all_pairs(Teuchos::ParameterList timeintpa
     }
   }
 
-  get_comm().MaxAll(&kappa_max, &global_kappa_max_, 1);
+  Core::Communication::max_all(&kappa_max, &global_kappa_max_, 1, get_comm());
   //  std::cout << "global_kappa_max_: " << global_kappa_max_ << std::endl;
   timeintparams.set("kappa_max", global_kappa_max_);
   // End: Determine maximal curvature occuring in complete beam discretization
@@ -1327,12 +1327,12 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMINTERACTION::Utils::is_beam_element(*(elementpairs[i])[0]))
+    if (BeamInteraction::Utils::is_beam_element(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMINTERACTION::Utils::is_beam_element(*(elementpairs[i])[1]))
+    else if (BeamInteraction::Utils::is_beam_element(*(elementpairs[i])[1]))
     {
       std::vector<Core::Elements::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1367,7 +1367,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
       // ele1 and ele2 (in case this is a beam element) have to be of the same type as ele1 of the
       // first pair
       if (ele1_type != pair1_ele1_type or
-          (BEAMINTERACTION::Utils::is_beam_element(*(formattedelementpairs[k])[1]) and
+          (BeamInteraction::Utils::is_beam_element(*(formattedelementpairs[k])[1]) and
               ele2_type != pair1_ele1_type))
       {
         FOUR_C_THROW(
@@ -1392,7 +1392,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     int currid2 = ele2->id();
 
     // beam-to-beam pair
-    if (BEAMINTERACTION::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
+    if (BeamInteraction::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1428,7 +1428,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
       }
     }
     // beam-to-solid contact pair
-    else if (BEAMINTERACTION::solid_contact_element(*(formattedelementpairs[k])[1]))
+    else if (BeamInteraction::solid_contact_element(*(formattedelementpairs[k])[1]))
     {
       bool foundlasttimestep = false;
       bool isalreadyinpairs = false;
@@ -1475,7 +1475,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
   int numpairs = 0;
   int numpairsthisproc = pairs_.size();
 
-  pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
+  Core::Communication::sum_all(&numpairsthisproc, &numpairs, 1, pdiscret_.get_comm());
 
   if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
     Core::IO::cout(Core::IO::standard)
@@ -1486,7 +1486,7 @@ void CONTACT::Beam3cmanager::fill_contact_pairs_vectors(
     numpairs = 0;
     numpairsthisproc = btsolpairs_.size();
 
-    pdiscret_.get_comm().SumAll(&numpairsthisproc, &numpairs, 1);
+    Core::Communication::sum_all(&numpairsthisproc, &numpairs, 1, pdiscret_.get_comm());
 
     if (Core::Communication::my_mpi_rank(pdiscret_.get_comm()) == 0)
       Core::IO::cout(Core::IO::standard)
@@ -1512,12 +1512,12 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
   for (int i = 0; i < (int)elementpairs.size(); i++)
   {
     // if ele1 is a beam element we take the pair directly
-    if (BEAMINTERACTION::Utils::is_beam_element(*(elementpairs[i])[0]))
+    if (BeamInteraction::Utils::is_beam_element(*(elementpairs[i])[0]))
     {
       formattedelementpairs.push_back(elementpairs[i]);
     }
     // if ele1 is no beam element, but ele2 is one, we have to change the order
-    else if (BEAMINTERACTION::Utils::is_beam_element(*(elementpairs[i])[1]))
+    else if (BeamInteraction::Utils::is_beam_element(*(elementpairs[i])[1]))
     {
       std::vector<Core::Elements::Element*> elementpairaux;
       elementpairaux.clear();
@@ -1557,9 +1557,9 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     nodes1[0]->get_condition("BeamPotentialLineCharge", conds1);
 
     // get correct condition for beam or rigid sphere element
-    if (BEAMINTERACTION::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
+    if (BeamInteraction::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
       nodes2[0]->get_condition("BeamPotentialLineCharge", conds2);
-    else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*(formattedelementpairs[k])[1]) and
+    else if (BeamInteraction::Utils::is_rigid_sphere_element(*(formattedelementpairs[k])[1]) and
              potbtsph_)
       nodes2[0]->get_condition("RigidspherePotentialPointCharge", conds2);
 
@@ -1585,7 +1585,7 @@ void CONTACT::Beam3cmanager::fill_potential_pairs_vectors(
     if (validinteraction)
     {
       // beam-to-beam pair
-      if (BEAMINTERACTION::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
+      if (BeamInteraction::Utils::is_beam_element(*(formattedelementpairs[k])[1]))
       {
         // Add new potential pair object: The auxiliary_instance of the abstract class
         // Beam3tobeampotentialinterface is only needed here in order to call the function Impl()
@@ -1641,8 +1641,8 @@ std::vector<std::vector<Core::Elements::Element*>> CONTACT::Beam3cmanager::brute
      * if so, we simply skip it because it does not have position (and tangent) DoFs */
     if (currentpositions.find(firstgid) == currentpositions.end())
     {
-      if (BEAMINTERACTION::Utils::is_beam_node(*firstnode) and
-          !BEAMINTERACTION::Utils::is_beam_centerline_node(*firstnode))
+      if (BeamInteraction::Utils::is_beam_node(*firstnode) and
+          !BeamInteraction::Utils::is_beam_centerline_node(*firstnode))
       {
         continue;
       }
@@ -1878,7 +1878,7 @@ void CONTACT::Beam3cmanager::compute_search_radius()
     charactlength = maxelelength;
 
   // communicate among all procs to find the global maximum
-  get_comm().MaxAll(&charactlength, &globalcharactlength, 1);
+  Core::Communication::max_all(&charactlength, &globalcharactlength, 1, get_comm());
 
   // Compute the search radius. This one is only applied to determine
   // close pairs considering the node-to-node distances.
@@ -1930,11 +1930,11 @@ void CONTACT::Beam3cmanager::set_min_max_ele_radius()
 
     double eleradius = 0.0;
 
-    if (BEAMINTERACTION::Utils::is_beam_element(*thisele) or
-        BEAMINTERACTION::Utils::is_rigid_sphere_element(*thisele))
+    if (BeamInteraction::Utils::is_beam_element(*thisele) or
+        BeamInteraction::Utils::is_rigid_sphere_element(*thisele))
     {  // compute eleradius from moment of inertia
       // (RESTRICTION: CIRCULAR CROSS SECTION !!!)
-      eleradius = BEAMINTERACTION::calc_ele_radius(thisele);
+      eleradius = BeamInteraction::calc_ele_radius(thisele);
 
       // if current radius is larger than maximum radius -> update
       if (eleradius > maxeleradius_) maxeleradius_ = eleradius;
@@ -1969,7 +1969,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
 
     double elelength = 0.0;
 
-    if (BEAMINTERACTION::Utils::is_beam_element(*thisele))
+    if (BeamInteraction::Utils::is_beam_element(*thisele))
     {
       // get global IDs of edge nodes and pointers
       int node0_gid = thisele->node_ids()[0];
@@ -1992,7 +1992,7 @@ void CONTACT::Beam3cmanager::get_max_ele_length(double& maxelelength)
       for (int j = 0; j < 3; ++j) dist[j] = x_n0[j] - x_n1[j];
       elelength = sqrt(dist[0] * dist[0] + dist[1] * dist[1] + dist[2] * dist[2]);
     }
-    else if (BEAMINTERACTION::Utils::is_rigid_sphere_element(*thisele))
+    else if (BeamInteraction::Utils::is_rigid_sphere_element(*thisele))
       continue;  // elelength does not apply for rigid spheres, radius is already considered in
                  // MaxEleRadius(), so simply do nothing here
     else
@@ -2745,7 +2745,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
         // Get pointer onto current beam element
         Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::Utils::is_beam_element(*element))
+        if (!BeamContact::Utils::is_beam_element(*element))
         {
           gmsh_solid(element, disrow, gmshfilecontent);
         }
@@ -2756,7 +2756,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
         // Get pointer onto current beam element
         Core::Elements::Element* element = BTSolDiscret().lColElement(i);
 
-        if (!BEAMCONTACT::Utils::is_beam_element(*element))
+        if (!BeamContact::Utils::is_beam_element(*element))
         {
           gmsh_solid_surface_element_numbers(element, disrow, gmshfilecontent);
         }
@@ -2785,7 +2785,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
       for (int i = 0; i < ColElements()->NumMyElements(); ++i)
       {
         Core::Elements::Element* element = BTSolDiscret().lColElement(i);
-        if (BEAMCONTACT::Utils::is_beam_element(*element))
+        if (BeamContact::Utils::is_beam_element(*element))
           numele1++;
         else
           numele2++;
@@ -2949,10 +2949,10 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
       fprintf(fp, "%s", gmshfilecontent.str().c_str());
       fclose(fp);
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
   }
 
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
   // Add a white and a black point -> this is necessary in order to get the full color range
   if (Core::Communication::my_mpi_rank(btsoldiscret_->get_comm()) == 0)
   {
@@ -2968,7 +2968,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
     fprintf(fp, "%s", gmshfilecontent.str().c_str());
     fclose(fp);
   }
-  get_comm().Barrier();
+  Core::Communication::barrier(get_comm());
 
 //*************************begin: gmsh output of contact forces for
 // solids************************************
@@ -3018,7 +3018,7 @@ void CONTACT::Beam3cmanager::gmsh_output(const Core::LinAlg::Vector<double>& dis
     // Get pointer onto current beam element
     Core::Elements::Element* element = ProblemDiscret().lColElement(i);
 
-    if (!BEAMCONTACT::Utils::is_beam_element(*element))
+    if (!BeamContact::Utils::is_beam_element(*element))
     {
       gmsh_solid(element, disrow, fc2filecontent);
     }
@@ -3205,8 +3205,8 @@ void CONTACT::Beam3cmanager::update_constr_norm()
 
       // get smaller radius of the two elements:
       double smallerradius = 0.0;
-      double radius1 = BEAMINTERACTION::calc_ele_radius(pairs_[i]->element1());
-      double radius2 = BEAMINTERACTION::calc_ele_radius(pairs_[i]->element2());
+      double radius1 = BeamInteraction::calc_ele_radius(pairs_[i]->element1());
+      double radius2 = BeamInteraction::calc_ele_radius(pairs_[i]->element2());
       if (radius1 < radius2)
         smallerradius = radius1;
       else
@@ -3262,18 +3262,18 @@ void CONTACT::Beam3cmanager::update_constr_norm()
   // As long as the beam contact discretization is full overlapping, all pairs are stored in all
   // procs and don't need this procedure. However, for future applications (i.e. when abstain from a
   // fully overlapping discretization) it might be useful.
-  get_comm().MaxAll(&maxgap, &maxallgap, 1);
-  get_comm().MaxAll(&maxgap_cp, &maxallgap_cp, 1);
-  get_comm().MaxAll(&maxgap_gp, &maxallgap_gp, 1);
-  get_comm().MaxAll(&maxgap_ep, &maxallgap_ep, 1);
-  get_comm().MinAll(&mingap, &minallgap, 1);
-  get_comm().MinAll(&mingap_cp, &minallgap_cp, 1);
-  get_comm().MinAll(&mingap_gp, &minallgap_gp, 1);
-  get_comm().MinAll(&mingap_ep, &minallgap_ep, 1);
-  get_comm().MaxAll(&maxrelgap, &maxallrelgap, 1);
-  get_comm().MinAll(&minrelgap, &minallrelgap, 1);
+  Core::Communication::max_all(&maxgap, &maxallgap, 1, get_comm());
+  Core::Communication::max_all(&maxgap_cp, &maxallgap_cp, 1, get_comm());
+  Core::Communication::max_all(&maxgap_gp, &maxallgap_gp, 1, get_comm());
+  Core::Communication::max_all(&maxgap_ep, &maxallgap_ep, 1, get_comm());
+  Core::Communication::min_all(&mingap, &minallgap, 1, get_comm());
+  Core::Communication::min_all(&mingap_cp, &minallgap_cp, 1, get_comm());
+  Core::Communication::min_all(&mingap_gp, &minallgap_gp, 1, get_comm());
+  Core::Communication::min_all(&mingap_ep, &minallgap_ep, 1, get_comm());
+  Core::Communication::max_all(&maxrelgap, &maxallrelgap, 1, get_comm());
+  Core::Communication::min_all(&minrelgap, &minallrelgap, 1, get_comm());
 
-  get_comm().SumAll(&proclocal_penaltyenergy, &totpenaltyenergy_, 1);
+  Core::Communication::sum_all(&proclocal_penaltyenergy, &totpenaltyenergy_, 1, get_comm());
 
   // So far, we have determined the extrema of the current time step. Now, we want to determine the
   // extrema of the total simulation:
@@ -3371,7 +3371,7 @@ void CONTACT::Beam3cmanager::console_output()
       Core::IO::cout(Core::IO::verbose)
           << "    ID1            ID2              T xi       eta      angle    gap         force\n";
     }
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
     double maxangle = 0.0;
     double minangle = 90.0;
@@ -3509,7 +3509,7 @@ void CONTACT::Beam3cmanager::console_output()
       }
     }
 
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
 
 #ifdef PRINTGAPSOVERLENGTHFILE
     // write content into file and close it
@@ -3531,18 +3531,19 @@ void CONTACT::Beam3cmanager::console_output()
     int sumpro_numepc = 0;
     int sumpro_numperpc_transitions = 0;
 
-    get_comm().MaxAll(&maxangle, &sumpro_maxangle, 1);
-    get_comm().MinAll(&minangle, &sumpro_minangle, 1);
-    get_comm().MinAll(&mincpgap, &sumpro_mincpgap, 1);
-    get_comm().MinAll(&mingpgap, &sumpro_mingpgap, 1);
-    get_comm().MinAll(&minepgap, &sumpro_minepgap, 1);
-    get_comm().MaxAll(&maxcpgap, &sumpro_maxcpgap, 1);
-    get_comm().MaxAll(&maxgpgap, &sumpro_maxgpgap, 1);
-    get_comm().MaxAll(&maxepgap, &sumpro_maxepgap, 1);
-    get_comm().SumAll(&numperpc, &sumpro_numperpc, 1);
-    get_comm().SumAll(&numparc, &sumpro_numparc, 1);
-    get_comm().SumAll(&numepc, &sumpro_numepc, 1);
-    get_comm().SumAll(&numperpc_transitions, &sumpro_numperpc_transitions, 1);
+    Core::Communication::max_all(&maxangle, &sumpro_maxangle, 1, get_comm());
+    Core::Communication::min_all(&minangle, &sumpro_minangle, 1, get_comm());
+    Core::Communication::min_all(&mincpgap, &sumpro_mincpgap, 1, get_comm());
+    Core::Communication::min_all(&mingpgap, &sumpro_mingpgap, 1, get_comm());
+    Core::Communication::min_all(&minepgap, &sumpro_minepgap, 1, get_comm());
+    Core::Communication::max_all(&maxcpgap, &sumpro_maxcpgap, 1, get_comm());
+    Core::Communication::max_all(&maxgpgap, &sumpro_maxgpgap, 1, get_comm());
+    Core::Communication::max_all(&maxepgap, &sumpro_maxepgap, 1, get_comm());
+    Core::Communication::sum_all(&numperpc, &sumpro_numperpc, 1, get_comm());
+    Core::Communication::sum_all(&numparc, &sumpro_numparc, 1, get_comm());
+    Core::Communication::sum_all(&numepc, &sumpro_numepc, 1, get_comm());
+    Core::Communication::sum_all(
+        &numperpc_transitions, &sumpro_numperpc_transitions, 1, get_comm());
 
 #ifdef PRINTNUMCONTACTSFILE
     if (Core::Communication::my_mpi_rank(Comm()) == 0)
@@ -3672,7 +3673,7 @@ void CONTACT::Beam3cmanager::console_output()
     }
 
     // end output
-    get_comm().Barrier();
+    Core::Communication::barrier(get_comm());
     if (Core::Communication::my_mpi_rank(get_comm()) == 0)
       Core::IO::cout(Core::IO::standard) << Core::IO::endl;
   }
@@ -3695,7 +3696,7 @@ void CONTACT::Beam3cmanager::gmsh_2_noded(const int& n,
   Core::LinAlg::SerialDenseVector theta(3);
   Core::LinAlg::SerialDenseMatrix R(3, 3);
 
-  double eleradius = BEAMINTERACTION::calc_ele_radius(thisele);
+  double eleradius = BeamInteraction::calc_ele_radius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;
@@ -3853,7 +3854,7 @@ void CONTACT::Beam3cmanager::gmsh_3_noded(const int& n,
   Core::LinAlg::SerialDenseMatrix R(3, 3);
   Core::LinAlg::SerialDenseMatrix coord(3, 2);
 
-  double eleradius = BEAMINTERACTION::calc_ele_radius(thisele);
+  double eleradius = BeamInteraction::calc_ele_radius(thisele);
 
   // declaring variable for color of elements
   double color = 1.0;

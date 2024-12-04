@@ -35,11 +35,11 @@ namespace Solid
     class BeamInteractionDataState;
   }  // namespace ModelEvaluator
 }  // namespace Solid
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   class BeamToSolidParamsBase;
   class BeamContactPair;
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 namespace Core::LinAlg
 {
@@ -48,7 +48,7 @@ namespace Core::LinAlg
 }  // namespace Core::LinAlg
 
 
-namespace BEAMINTERACTION
+namespace BeamInteraction
 {
   /**
    * \brief In beam to solid interactions with mortar contact discretization, we need to create a
@@ -93,7 +93,7 @@ namespace BEAMINTERACTION
      * @params start_value_lambda_gid (in) Start value for the Lagrange multiplier global IDs.
      */
     BeamToSolidMortarManager(const std::shared_ptr<const Core::FE::Discretization>& discret,
-        const std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase>& params,
+        const std::shared_ptr<const BeamInteraction::BeamToSolidParamsBase>& params,
         int start_value_lambda_gid);
 
     /**
@@ -137,7 +137,7 @@ namespace BEAMINTERACTION
      * @param contact_pairs All contact pairs on this processor.
      */
     void set_local_maps(
-        const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& contact_pairs);
+        const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& contact_pairs);
 
     /**
      * \brief Get vectors with GIDs of the positional and rotational Lagrange multipliers for the
@@ -146,7 +146,7 @@ namespace BEAMINTERACTION
      * First entry in the pair are the translational GIDs and second entry are the rotational GIDs.
      */
     [[nodiscard]] std::pair<std::vector<int>, std::vector<int>> location_vector(
-        const BEAMINTERACTION::BeamContactPair& contact_pair) const;
+        const BeamInteraction::BeamContactPair& contact_pair) const;
 
     /**
      * \brief Evaluate the force and stiffness contributions resulting from a penalty
@@ -176,7 +176,7 @@ namespace BEAMINTERACTION
      * \brief Return a const reference to the contact pairs in this mortar manager.
      * @return Reference to the pair vector.
      */
-    const std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>>& get_contact_pairs() const
+    const std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>>& get_contact_pairs() const
     {
       return contact_pairs_;
     }
@@ -298,7 +298,7 @@ namespace BEAMINTERACTION
     std::shared_ptr<const Core::FE::Discretization> discret_;
 
     //! Pointer to the beam contact parameters.
-    std::shared_ptr<const BEAMINTERACTION::BeamToSolidParamsBase> beam_to_solid_params_;
+    std::shared_ptr<const BeamInteraction::BeamToSolidParamsBase> beam_to_solid_params_;
 
     //! Row map of the additional Lagrange multiplier DOFs for translations.
     std::shared_ptr<Epetra_Map> lambda_dof_rowmap_translations_;
@@ -373,9 +373,9 @@ namespace BEAMINTERACTION
     std::shared_ptr<Epetra_FEVector> lambda_active_;
 
     //! Vector with all contact pairs to be evaluated by this mortar manager.
-    std::vector<std::shared_ptr<BEAMINTERACTION::BeamContactPair>> contact_pairs_;
+    std::vector<std::shared_ptr<BeamInteraction::BeamContactPair>> contact_pairs_;
   };
-}  // namespace BEAMINTERACTION
+}  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
 
