@@ -758,7 +758,7 @@ BeamInteraction::BeamToSolidMortarManager::penalty_invert_kappa() const
   return kappa_inv;
 }
 
-void BEAMINTERACTION::BeamToSolidMortarManager::assemble_force(
+void BeamInteraction::BeamToSolidMortarManager::assemble_force(
     Solid::TimeInt::BaseDataGlobalState& gstate, Epetra_Vector& f,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
@@ -820,7 +820,7 @@ void BEAMINTERACTION::BeamToSolidMortarManager::assemble_force(
   f.Update(1., tmp, 1.);
 }
 
-void BEAMINTERACTION::BeamToSolidMortarManager::assemble_stiff(
+void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
     Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::SparseOperator& jac,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
