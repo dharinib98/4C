@@ -21,6 +21,7 @@ Core::LinearSolver::IFPACKPreconditioner::IFPACKPreconditioner(
     Teuchos::ParameterList& ifpacklist, Teuchos::ParameterList& solverlist)
     : ifpacklist_(ifpacklist), solverlist_(solverlist)
 {
+  return;
 }
 
 //------------------------------------------------------------------------------
@@ -80,6 +81,5 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
     prec_->Compute();
   }
 }
-
 
 FOUR_C_NAMESPACE_CLOSE
