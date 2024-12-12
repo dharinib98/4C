@@ -26,6 +26,8 @@
 #include "4C_utils_exceptions.hpp"
 
 #include <Epetra_FEVector.h>
+#include <Epetra_Vector.h>
+#include <Teuchos_RCPDecl.hpp>
 
 FOUR_C_NAMESPACE_OPEN
 
