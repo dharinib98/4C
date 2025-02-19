@@ -477,6 +477,8 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
 
   // Add the penalty terms to the global force and stiffness matrix
   add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
+
+  global_lambda_container_ = data_state->get_lambda();
 }
 
 /**
@@ -497,7 +499,17 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
       std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
-  Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
+  const auto lambda = get_global_lambda();
+  if (lambda == nullptr)
+  {
+    lambda_col->PutScalar(0.0);
+  }
+  else
+  {
+    Core::LinAlg::VectorView a_view_const(*global_lambda_container_);
+    Core::LinAlg::export_to(a_view_const, *lambda_col);
+  }
+
   return lambda_col;
 }
 
