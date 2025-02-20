@@ -46,7 +46,7 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
 
     pmatrix_ = std::make_shared<Epetra_CrsMatrix>(*A_crs);
 
-    std::string xmlFileName = ifpacklist_.get<std::string>("IFPACK_XML_FILE");
+    const std::string xmlFileName = ifpacklist_.get<std::string>("IFPACK_XML_FILE");
     if (xmlFileName == "none") FOUR_C_THROW("IFPACK_XML_FILE parameter not set!");
 
     Teuchos::ParameterList ifpack_params;
@@ -57,8 +57,8 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
     Teuchos::updateParametersFromXmlFileAndBroadcast(
         xmlFileName, Teuchos::Ptr(&ifpack_params), *comm);
 
-    auto prectype = ifpack_params.get<std::string>("Preconditioner type");
-    auto overlap = ifpack_params.get<int>("Overlap");
+    const std::string prectype = ifpack_params.get<std::string>("Preconditioner type");
+    const int overlap = ifpack_params.get<int>("Overlap");
 
     Ifpack Factory;
     prec_ =
