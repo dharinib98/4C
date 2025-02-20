@@ -63,7 +63,7 @@ namespace Inpar::SOLVER
     // Ifpack options
     {
       Core::Utils::string_parameter(
-          "IFPACK_XML_FILE", "none", "xml file defining any IFPACK options", &list);
+          "IFPACK_XML_FILE", "none", "xml file defining any IFPACK options", list);
     }
 
     // Iterative solver options
