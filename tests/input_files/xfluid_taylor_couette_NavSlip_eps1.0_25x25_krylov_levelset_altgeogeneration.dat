@@ -166,7 +166,7 @@ AZPREC                          ILU
 AZREUSE                         1
 AZTOL                           1.0E-5
 AZCONV                          AZ_r0
-IFPACK_XML_FILE                 xml/ifpack.xml
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 --------------------------------------------------------------------SOLVER 2
 NAME                            Scatra_Solver
 SOLVER                          UMFPACK

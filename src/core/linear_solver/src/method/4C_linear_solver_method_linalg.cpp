@@ -244,7 +244,7 @@ Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList& 
   ifpacklist.set("schwarz: reordering type", "rcm");  // "rcm" or "metis" or "amd"
   */
 
-  std::string xmlfile = inparams.get<std::string>("IFPACK_XML_FILE");
+  const std::string xmlfile = inparams.get<std::string>("IFPACK_XML_FILE");
   if (xmlfile != "none") ifpacklist.set("IFPACK_XML_FILE", xmlfile);
 
   return ifpacklist;

@@ -59,7 +59,7 @@ NAME                            Structure_Solver
 AZCONV                          AZ_r0
 AZITER                          1000
 AZOUTPUT                        0
-IFPACK_XML_FILE                 xml/ifpack.xml
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 AZPREC                          ILU
 AZREUSE                         0
 AZSOLVE                         GMRES

@@ -79,7 +79,7 @@ GEOMETRY                        full
 SOLVER                          UMFPACK
 AZSOLVE                         GMRES
 AZPREC                          ILU
-IFPACK_XML_FILE                 xml/ifpack.xml
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 IFPACKCOMBINE                   Add
 AZSUB                           5000
 AZCONV                          AZ_r0

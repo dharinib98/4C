@@ -64,7 +64,7 @@ AZSOLVE                         GMRES
 AZTOL                           1.0E-8
 AZCONV                          AZ_r0
 AZPREC                          ILU
-IFPACK_XML_FILE                 xml/ifpack.xml
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 AZOUTPUT                        0
 AZREUSE                         0
 ----------------------------------------------DESIGN POINT DIRICH CONDITIONS

@@ -72,7 +72,7 @@ AZREUSE                         0
 AZTOL                           1.0E-17
 AZITER                          1500
 AZSUB                           100
-IFPACK_XML_FILE                 xml/ifpack.xml
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 AZCONV                          AZ_r0
 --------------------------------------------------------------------SOLVER 2
 NAME                            L2_Fluid_Solver
