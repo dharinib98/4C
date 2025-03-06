@@ -34,7 +34,6 @@
 #include "4C_fem_geometric_search_visualization.hpp"
 #include "4C_geometry_pair_line_to_3D_evaluation_data.hpp"
 #include "4C_global_data.hpp"
-#include "4C_inpar_beamcontact.hpp"
 #include "4C_inpar_geometry_pair.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
