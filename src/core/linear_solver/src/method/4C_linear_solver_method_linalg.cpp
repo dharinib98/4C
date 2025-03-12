@@ -237,8 +237,8 @@ Teuchos::ParameterList translate_four_c_to_ifpack(const Teuchos::ParameterList& 
 {
   Teuchos::ParameterList ifpacklist;
 
-  const std::string xmlfile = inparams.get<std::string>("IFPACK_XML_FILE");
-  if (xmlfile != "none") ifpacklist.set("IFPACK_XML_FILE", xmlfile);
+  auto xmlfile = inparams.get<Core::IO::Noneable<std::filesystem::path>>("IFPACK_XML_FILE");
+  if (xmlfile) ifpacklist.set("IFPACK_XML_FILE", xmlfile->string());
 
   return ifpacklist;
 }

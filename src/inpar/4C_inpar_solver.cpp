@@ -62,8 +62,11 @@ namespace Inpar::SOLVER
 
     // Ifpack options
     {
-      Core::Utils::string_parameter(
-          "IFPACK_XML_FILE", "none", "xml file defining any IFPACK options", list);
+      list.specs.emplace_back(
+          Core::IO::InputSpecBuilders::entry<Core::IO::Noneable<std::filesystem::path>>(
+              "IFPACK_XML_FILE",
+              {.description = "xml file defining any IFPACK preconditioner",
+                  .default_value = Core::IO::Noneable<std::filesystem::path>()}));
     }
 
     // Iterative solver options

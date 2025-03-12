@@ -28,6 +28,8 @@ Core::LinearSolver::IFPACKPreconditioner::IFPACKPreconditioner(
 void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operator* matrix,
     Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
+  ifpacklist_.print(std::cout);
+
   if (create)
   {
     std::shared_ptr<Epetra_CrsMatrix> A_crs =
@@ -48,6 +50,8 @@ void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operato
 
     const std::string xmlFileName = ifpacklist_.get<std::string>("IFPACK_XML_FILE");
     if (xmlFileName == "none") FOUR_C_THROW("IFPACK_XML_FILE parameter not set!");
+
+    std::cout << xmlFileName << std::endl;
 
     Teuchos::ParameterList ifpack_params;
 
