@@ -160,6 +160,7 @@ SUGRVEL                         no
 --------------------------------------------------------------------SOLVER 1
 NAME                            Fluid_Solver
 SOLVER                          Belos
+IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
 AZOUTPUT                        50
 AZSOLVE                         GMRES
 AZPREC                          ILU

@@ -67,7 +67,7 @@ NAME                            Fluid_Solver
 SOLVER                          Belos
 AZOUTPUT                        0
 AZSOLVE                         GMRES
-AZPREC ILU
+AZPREC                          ILU
 AZREUSE                         5
 AZTOL                           1.0E-4
 AZCONV                          AZ_r0
