@@ -56,9 +56,9 @@ namespace Inpar::SOLVER
                     "interface and the client does not pass\nin an external preconditioner!",
                 .default_value = Core::LinearSolver::PreconditionerType::ilu}),
 
-    // Ifpack options
-      Core::IO::InputSpecBuilders::parameter<std::optional<std::filesystem::path>>(
-              "IFPACK_XML_FILE", {.description = "xml file defining any Ifpack preconditioner"}),
+        // Ifpack options
+        Core::IO::InputSpecBuilders::parameter<std::optional<std::filesystem::path>>(
+            "IFPACK_XML_FILE", {.description = "xml file defining any Ifpack preconditioner"}),
 
         // Iterative solver options
         parameter<int>(
