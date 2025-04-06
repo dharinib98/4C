@@ -54,7 +54,6 @@ SOLVER                          Belos
 AZSOLVE                         GMRES
 AZPREC                          ILU
 IFPACK_XML_FILE                 xml/preconditioner/ifpack.xml
-IFPACKCOMBINE                   Add
 AZSUB                           100
 AZCONV                          AZ_r0
 AZOUTPUT                        0
