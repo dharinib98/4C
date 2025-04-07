@@ -502,11 +502,11 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda_col() const
   const auto lambda = get_global_lambda();
   if (lambda == nullptr)
   {
-    lambda_col->PutScalar(0.0);
+    lambda_col->put_scalar(0.0);
   }
   else
   {
-    Core::LinAlg::VectorView a_view_const(*global_lambda_container_);
+    Core::LinAlg::View a_view_const(*global_lambda_container_);
     Core::LinAlg::export_to(a_view_const, *lambda_col);
   }
 
@@ -674,7 +674,7 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
   Core::LinAlg::export_to(*lambda, lambda_col);
 
   std::cout << "\nLambda due to penalty: \n";
-  lambda->Print(std::cout);
+  lambda->print(std::cout);
 
   std::cout << "\nLambda due to lagrange: \n";
   data_state->get_lambda()->Print(std::cout);
@@ -801,7 +801,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
   // meins.ReplaceGlobalValue(103, 0, 69.69);
 
   auto tmp = Core::LinAlg::Vector<double>(f.Map());
-  Core::LinAlg::VectorView a_view_const(*constraint_);
+  Core::LinAlg::View a_view_const(*constraint_);
   Core::LinAlg::export_to(a_view_const, tmp);
 
 
@@ -842,7 +842,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
   // Set penalty entry
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
   auto kappa_vector = Core::LinAlg::Vector<double>(*lambda_dof_rowmap_);
-  Core::LinAlg::VectorView a_view_const(*kappa_);
+  Core::LinAlg::View a_view_const(*kappa_);
   Core::LinAlg::export_to(a_view_const, kappa_vector);
   Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat2 =
       Teuchos::rcp(new Core::LinAlg::SparseMatrix(kappa_vector));
