@@ -2,4 +2,6 @@
   <Parameter name="Preconditioner type" type="string" value="ILU"/>
   <Parameter name="Overlap" type="int" value="3"/>
   <Parameter name="fact: level-of-fill" type="int" value="3"/>
+  <Parameter name="schwarz: combine mode" type="string" value="Add"/>
+  <Parameter name="schwarz: reordering type" type="string" value="rcm"/>
 </ParameterList>
