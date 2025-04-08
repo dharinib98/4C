@@ -28,8 +28,6 @@ Core::LinearSolver::IFPACKPreconditioner::IFPACKPreconditioner(
 void Core::LinearSolver::IFPACKPreconditioner::setup(bool create, Epetra_Operator* matrix,
     Core::LinAlg::MultiVector<double>* x, Core::LinAlg::MultiVector<double>* b)
 {
-  ifpacklist_.print(std::cout);
-
   if (create)
   {
     std::shared_ptr<Epetra_CrsMatrix> A_crs =
