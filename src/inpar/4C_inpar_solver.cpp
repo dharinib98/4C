@@ -58,7 +58,12 @@ namespace Inpar::SOLVER
 
         // Ifpack options
         Core::IO::InputSpecBuilders::parameter<std::optional<std::filesystem::path>>(
-            "IFPACK_XML_FILE", {.description = "xml file defining any Ifpack preconditioner"}),
+            "IFPACK_XML_FILE",
+            {.description = "This parameter describes the absolute or relative path to an xml file "
+                            "containing the configuration of a Trilinos/Ifpack preconditioner. The "
+                            "content of this xml file needs to follow Ifpack guidelines. Consult "
+                            "the Trilinos/Ifpack documentation and user guide for more information "
+                            "on valid Ifpack parameters.."}),
 
         // Iterative solver options
         parameter<int>(
