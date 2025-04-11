@@ -168,7 +168,6 @@ AZTOL                           1.0E-5
 AZCONV                          AZ_r0
 THROW_IF_UNCONVERGED            No
 IFPACK_XML_FILE                 xfluid_ifpack.xml
-THROW_IF_UNCONVERGED            No
 --------------------------------------------------------------------SOLVER 2
 NAME                            Scatra_Solver
 SOLVER                          UMFPACK
