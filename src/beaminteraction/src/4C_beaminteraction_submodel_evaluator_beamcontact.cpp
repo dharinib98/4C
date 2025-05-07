@@ -794,7 +794,7 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::get_half_interaction_dista
 }
 
 std::shared_ptr<const FourC::Core::LinAlg::Map>
-BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_lagrange_map()
+BeamInteraction::SubmodelEvaluator::BeamContact::get_lagrange_map()
 {
   if (assembly_managers_.size() != 1) FOUR_C_THROW("Only working for single assembly manager");
 
@@ -808,7 +808,7 @@ BeamInteraction::SUBMODELEVALUATOR::BeamContact::get_lagrange_map()
   return indirect_assembly_manager->get_mortar_manager()->lambda_dof_rowmap_;
 }
 
-void BeamInteraction::SUBMODELEVALUATOR::BeamContact::assemble_force(Epetra_Vector& f)
+void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_force(Epetra_Vector& f)
 {
   auto indirect_assembly_manager =
       std::dynamic_pointer_cast<BeamContactAssemblyManagerInDirect>(assembly_managers_[0]);
@@ -816,7 +816,7 @@ void BeamInteraction::SUBMODELEVALUATOR::BeamContact::assemble_force(Epetra_Vect
       g_state(), f, beam_interaction_data_state_ptr());
 };
 
-void BeamInteraction::SUBMODELEVALUATOR::BeamContact::assemble_stiff(
+void BeamInteraction::SubmodelEvaluator::BeamContact::assemble_stiff(
     Core::LinAlg::SparseOperator& jac)
 {
   auto indirect_assembly_manager =
