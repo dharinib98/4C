@@ -543,7 +543,7 @@ void Core::FE::Discretization::set_state(
         not stateimporter_[nds]->SourceMap().SameAs(state.get_map().get_epetra_block_map()) or
         not stateimporter_[nds]->TargetMap().SameAs(colmap->get_epetra_block_map()))
     {
-      stateimporter_[nds] = std::make_shared<Epetra_Import>(
+      stateimporter_[nds] = std::make_shared<Core::LinAlg::Import>(
           colmap->get_epetra_block_map(), state.get_map().get_epetra_block_map());
     }
 

@@ -856,7 +856,7 @@ void Coupling::Adapter::Coupling::setup_coupling_matrices(const Core::LinAlg::Ma
   // communicate slave to master matrix
   auto tmp = std::make_shared<Core::LinAlg::SparseMatrix>(slavedomainmap, 1);
 
-  Epetra_Import exporter(
+  Core::LinAlg::Import exporter(
       slavedomainmap.get_epetra_block_map(), perm_slave_dof_map()->get_epetra_block_map());
   int err = tmp->import(*matsm_trans_, exporter, Insert);
   if (err) FOUR_C_THROW("Import failed with err={}", err);

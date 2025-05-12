@@ -357,7 +357,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       // **********************************************************************
     }
 
-    Epetra_Import nodeimporter(numdfcolnodes_->get_map().get_epetra_block_map(),
+    Core::LinAlg::Import nodeimporter(numdfcolnodes_->get_map().get_epetra_block_map(),
         num_dof_rownodes.get_map().get_epetra_block_map());
     int err = numdfcolnodes_->import(num_dof_rownodes, nodeimporter, Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);
@@ -417,7 +417,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
           }
       }
 
-      Epetra_Import faceimporter(numdfcolfaces_->get_map().get_epetra_block_map(),
+      Core::LinAlg::Import faceimporter(numdfcolfaces_->get_map().get_epetra_block_map(),
           numdfrowfaces.get_map().get_epetra_block_map());
       err = numdfcolfaces_->import(numdfrowfaces, faceimporter, Insert);
       if (err) FOUR_C_THROW("Import using importer returned err={}", err);
@@ -460,7 +460,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       }
     }
 
-    Epetra_Import elementimporter(numdfcolelements_->get_map().get_epetra_block_map(),
+    Core::LinAlg::Import elementimporter(numdfcolelements_->get_map().get_epetra_block_map(),
         numdfrowelements.get_map().get_epetra_block_map());
     err = numdfcolelements_->import(numdfrowelements, elementimporter, Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);

@@ -10,10 +10,11 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include <Epetra_Import.h>
+#include <Epetra_Map.h>
 
 #include <iomanip>
 #include <sstream>
@@ -505,7 +506,7 @@ namespace Core::Communication
           domainmap, Core::Communication::num_mpi_ranks(lcomm) - 1);
 
     // export full matrices to the two desired processors
-    Epetra_Import serialimporter(
+    Core::LinAlg::Import serialimporter(
         serialrowmap->get_epetra_block_map(), rowmap.get_epetra_block_map());
     Core::LinAlg::SparseMatrix serialCrsMatrix(*serialrowmap, 0);
     serialCrsMatrix.import(matrix, serialimporter, Insert);

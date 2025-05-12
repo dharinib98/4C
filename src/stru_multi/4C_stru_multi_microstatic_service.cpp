@@ -94,7 +94,7 @@ void MultiScale::MicroStatic::set_up_homogenization()
       std::make_shared<Core::LinAlg::Map>(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm());
 
   // create importer
-  importp_ = std::make_shared<Epetra_Import>(
+  importp_ = std::make_shared<Core::LinAlg::Import>(
       pdof_->get_epetra_block_map(), (discret_->dof_row_map())->get_epetra_block_map());
   importf_ = std::make_shared<Epetra_Import>(
       fdof_->get_epetra_block_map(), (discret_->dof_row_map())->get_epetra_block_map());

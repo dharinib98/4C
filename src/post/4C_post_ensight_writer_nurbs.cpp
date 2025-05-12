@@ -1360,7 +1360,7 @@ void EnsightWriter::write_coordinates_for_nurbs_shapefunctions(std::ofstream& ge
   proc0map = Core::LinAlg::allreduce_e_map(*vispointmap_, 0);
 
   // import my new values (proc0 gets everything, other procs empty)
-  Epetra_Import proc0importer(
+  Core::LinAlg::Import proc0importer(
       proc0map->get_epetra_block_map(), vispointmap_->get_epetra_block_map());
   Core::LinAlg::MultiVector<double> allnodecoords(*proc0map, 3);
   int err = allnodecoords.Import(*nodecoords, proc0importer, Insert);
@@ -1909,7 +1909,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   Core::LinAlg::Vector<double> coldata(*fulldofmap, true);
 
   // create an importer and import the data
-  Epetra_Import importer(
+  Core::LinAlg::Import importer(
       (coldata).get_map().get_epetra_block_map(), (data).get_map().get_epetra_block_map());
   int imerr = (coldata).import((data), importer, Insert);
   if (imerr)
@@ -2114,7 +2114,7 @@ void EnsightWriter::write_dof_result_step_for_nurbs(std::ofstream& file, const i
   }  // loop over available elements
 
   // import my new values (proc0 gets everything, other procs empty)
-  Epetra_Import proc0importer(
+  Core::LinAlg::Import proc0importer(
       proc0map_->get_epetra_block_map(), vispointmap_->get_epetra_block_map());
   Core::LinAlg::MultiVector<double> allsols(*proc0map_, numdf);
   int err = allsols.Import(*idata, proc0importer, Insert);
@@ -3433,7 +3433,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   Core::LinAlg::MultiVector<double> coldata(*fullnodemap, numdf, true);  // numdf important!!!
 
   // create an importer and import the data
-  Epetra_Import importer(
+  Core::LinAlg::Import importer(
       (coldata).get_map().get_epetra_block_map(), (data).get_map().get_epetra_block_map());
   int imerr = (coldata).Import((data), importer, Insert);
   if (imerr)
@@ -3516,7 +3516,7 @@ void EnsightWriter::write_nodal_result_step_for_nurbs(std::ofstream& file, const
   }  // loop over available elements
 
   // import my new values (proc0 gets everything, other procs empty)
-  Epetra_Import proc0importer(
+  Core::LinAlg::Import proc0importer(
       proc0map_->get_epetra_block_map(), vispointmap_->get_epetra_block_map());
   Core::LinAlg::MultiVector<double> allsols(*proc0map_, numdf);
   int err = allsols.Import(*idata, proc0importer, Insert);
