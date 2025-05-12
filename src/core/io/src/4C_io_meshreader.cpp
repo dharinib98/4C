@@ -173,8 +173,7 @@ namespace
     if (eids.empty())
     {
       // If the element section is empty, we create an empty input and return
-      roweles_ = std::make_shared<Core::LinAlg::Map>(
-          -1, 0, nullptr, 0, Core::Communication::as_epetra_comm(comm_));
+      roweles_ = std::make_shared<Core::LinAlg::Map>(-1, 0, nullptr, 0, comm_);
 
       return;
     }
@@ -193,8 +192,7 @@ namespace
       if (myrank == numproc - 1) mysize = numele - (numproc - 1) * bsize;
 
       // construct the map
-      roweles_ = std::make_shared<Core::LinAlg::Map>(
-          -1, mysize, &eids[myrank * bsize], 0, Core::Communication::as_epetra_comm(comm_));
+      roweles_ = std::make_shared<Core::LinAlg::Map>(-1, mysize, &eids[myrank * bsize], 0, comm_);
     }
 
     // define blocksizes for blocks of elements we read
@@ -559,10 +557,10 @@ namespace
 
         rebalanceParams.set("partitioning method", "RCB");
 
-        rowmap = std::make_shared<Core::LinAlg::Map>(-1, graph->row_map().NumMyElements(),
-            graph->row_map().MyGlobalElements(), 0, Core::Communication::as_epetra_comm(comm));
-        colmap = std::make_shared<Core::LinAlg::Map>(-1, graph->col_map().NumMyElements(),
-            graph->col_map().MyGlobalElements(), 0, Core::Communication::as_epetra_comm(comm));
+        rowmap = std::make_shared<Core::LinAlg::Map>(
+            -1, graph->row_map().NumMyElements(), graph->row_map().MyGlobalElements(), 0, comm);
+        colmap = std::make_shared<Core::LinAlg::Map>(
+            -1, graph->col_map().NumMyElements(), graph->col_map().MyGlobalElements(), 0, comm);
 
         discret.redistribute(*rowmap, *colmap,
             {.assign_degrees_of_freedom = false,
@@ -583,10 +581,10 @@ namespace
 
         rebalanceParams.set("partitioning method", "HYPERGRAPH");
 
-        rowmap = std::make_shared<Core::LinAlg::Map>(-1, graph->row_map().NumMyElements(),
-            graph->row_map().MyGlobalElements(), 0, Core::Communication::as_epetra_comm(comm));
-        colmap = std::make_shared<Core::LinAlg::Map>(-1, graph->col_map().NumMyElements(),
-            graph->col_map().MyGlobalElements(), 0, Core::Communication::as_epetra_comm(comm));
+        rowmap = std::make_shared<Core::LinAlg::Map>(
+            -1, graph->row_map().NumMyElements(), graph->row_map().MyGlobalElements(), 0, comm);
+        colmap = std::make_shared<Core::LinAlg::Map>(
+            -1, graph->col_map().NumMyElements(), graph->col_map().MyGlobalElements(), 0, comm);
 
         discret.redistribute(*rowmap, *colmap, {.do_boundary_conditions = false});
 
@@ -647,8 +645,7 @@ namespace
     }
     else
     {
-      rowmap = colmap = std::make_shared<Core::LinAlg::Map>(
-          -1, 0, nullptr, 0, Core::Communication::as_epetra_comm(comm));
+      rowmap = colmap = std::make_shared<Core::LinAlg::Map>(-1, 0, nullptr, 0, comm);
     }
 
     auto options_redistribution = Core::FE::OptionsRedistribution();
@@ -842,7 +839,7 @@ namespace
         }
 
         const auto& element_name = current_block_data->get<std::string>("ELEMENT_NAME");
-        const auto cell_type = eb.get_shape();
+        const auto cell_type = eb.cell_type;
         const auto cell_type_string = Core::FE::cell_type_to_string(cell_type);
 
         Core::Elements::ElementDefinition ed;
@@ -865,7 +862,7 @@ namespace
         linedef.fully_parse(element_parser, element_data);
 
 
-        for (const auto& ele_nodes : eb.get_ele_conn() | std::views::values)
+        for (const auto& ele_nodes : eb.elements | std::views::values)
         {
           auto ele = Core::Communication::factory(element_name, cell_type_string, ele_count, 0);
           if (!ele) FOUR_C_THROW("element creation failed");
@@ -885,8 +882,8 @@ namespace
       int first_ele_id = ele_count_before;
       Core::Communication::broadcast(num_read_ele, 0, comm);
       Core::Communication::broadcast(first_ele_id, 0, comm);
-      linear_element_map = std::make_unique<Core::LinAlg::Map>(
-          num_read_ele, ele_count_before, Core::Communication::as_epetra_comm(comm));
+      linear_element_map =
+          std::make_unique<Core::LinAlg::Map>(num_read_ele, ele_count_before, comm);
 
       std::vector<int> gid_list(num_read_ele);
       std::iota(gid_list.begin(), gid_list.end(), ele_count_before);
@@ -908,8 +905,7 @@ namespace
       int first_ele_id;
       Core::Communication::broadcast(num_read_ele, 0, comm);
       Core::Communication::broadcast(first_ele_id, 0, comm);
-      linear_element_map = std::make_unique<Core::LinAlg::Map>(
-          num_read_ele, first_ele_id, Core::Communication::as_epetra_comm(comm));
+      linear_element_map = std::make_unique<Core::LinAlg::Map>(num_read_ele, first_ele_id, comm);
 
       std::vector<int> gid_list;
       exodus_reader.target_discretization.proc_zero_distribute_elements_to_all(

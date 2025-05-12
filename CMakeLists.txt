@@ -114,7 +114,12 @@ include(cmake/setup_global_options.cmake)
 ###------------------------------------------------------------------ External Libraries
 
 # Collect all external dependencies in a helper target
-add_library(four_c_all_enabled_external_dependencies INTERFACE)
+add_library(
+  four_c_all_enabled_external_dependencies
+  INTERFACE
+  src/core/linalg/src/sparse/4C_linalg_transfer.cpp
+  src/core/linalg/src/sparse/4C_linalg_transfer.hpp
+  )
 
 four_c_configure_dependency(HDF5 DEFAULT ON)
 four_c_configure_dependency(MPI DEFAULT ON)
@@ -160,7 +165,6 @@ set(FOUR_C_EXECUTABLE_NAME 4C)
 set(FULL_TARGETS
     post_processor
     post_monitor
-    pre_exodus
     pre_locsys
     create_rtd
     cut_test

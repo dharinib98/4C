@@ -70,9 +70,9 @@ void Coupling::Adapter::CouplingMortar::setup(
   // separated beforehand.
   if (couplingcond == "Mortar" || couplingcond == "MortarMulti")
   {
-    std::vector<Core::Conditions::Condition*> conds;
-    std::vector<Core::Conditions::Condition*> conds_master(0);
-    std::vector<Core::Conditions::Condition*> conds_slave(0);
+    std::vector<const Core::Conditions::Condition*> conds;
+    std::vector<const Core::Conditions::Condition*> conds_master;
+    std::vector<const Core::Conditions::Condition*> conds_slave;
     masterdis->get_condition(couplingcond, conds);
 
     for (unsigned i = 0; i < conds.size(); i++)
@@ -1102,8 +1102,10 @@ void Coupling::Adapter::CouplingMortar::evaluate(
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(*pmasterdofrowmap_, *pslavedofrowmap_, false);
-  Epetra_Import master_importer(dofrowmap->get_epetra_map(), pmasterdofrowmap_->get_epetra_map());
-  Epetra_Import slaveImporter(dofrowmap->get_epetra_map(), pslavedofrowmap_->get_epetra_map());
+  Core::LinAlg::Import master_importer(
+      dofrowmap->get_epetra_map(), pmasterdofrowmap_->get_epetra_map());
+  Core::LinAlg::Import slaveImporter(
+      dofrowmap->get_epetra_map(), pslavedofrowmap_->get_epetra_map());
 
   // Import master and slave displacements into a single vector
   int err = 0;

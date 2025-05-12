@@ -210,7 +210,7 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
 
   {
     // get DoF coupling conditions
-    std::vector<Core::Conditions::Condition*> couplingconditions(0);
+    std::vector<const Core::Conditions::Condition*> couplingconditions;
     dis.get_condition("PointCoupling", couplingconditions);
     if (!couplingconditions.empty()) pccdofhandling_ = true;
 
@@ -357,10 +357,11 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       // **********************************************************************
     }
 
-    Epetra_Import nodeimporter(numdfcolnodes_->get_block_map(), num_dof_rownodes.get_block_map());
-    int err = numdfcolnodes_->import(num_dof_rownodes, nodeimporter, Insert);
+    Core::LinAlg::Import nodeimporter(
+        numdfcolnodes_->get_block_map(), num_dof_rownodes.get_block_map());
+    int err = numdfcolnodes_->import(num_dof_rownodes, nodeimporter.get_epetra_import(), Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);
-    err = idxcolnodes_->import(idxrownodes, nodeimporter, Insert);
+    err = idxcolnodes_->import(idxrownodes, nodeimporter.get_epetra_import(), Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);
 
     count = maxnodenumdf > 0 ? idxrownodes.max_value() + maxnodenumdf : 0;
@@ -416,10 +417,11 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
           }
       }
 
-      Epetra_Import faceimporter(numdfcolfaces_->get_block_map(), numdfrowfaces.get_block_map());
-      err = numdfcolfaces_->import(numdfrowfaces, faceimporter, Insert);
+      Core::LinAlg::Import faceimporter(
+          numdfcolfaces_->get_block_map(), numdfrowfaces.get_block_map());
+      err = numdfcolfaces_->import(numdfrowfaces, faceimporter.get_epetra_import(), Insert);
       if (err) FOUR_C_THROW("Import using importer returned err={}", err);
-      err = idxcolfaces_->import(idxrowfaces, faceimporter, Insert);
+      err = idxcolfaces_->import(idxrowfaces, faceimporter.get_epetra_import(), Insert);
       if (err) FOUR_C_THROW("Import using importer returned err={}", err);
 
       count = idxrowfaces.max_value() + maxfacenumdf;
@@ -458,11 +460,11 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
       }
     }
 
-    Epetra_Import elementimporter(
+    Core::LinAlg::Import elementimporter(
         numdfcolelements_->get_block_map(), numdfrowelements.get_block_map());
-    err = numdfcolelements_->import(numdfrowelements, elementimporter, Insert);
+    err = numdfcolelements_->import(numdfrowelements, elementimporter.get_epetra_import(), Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);
-    err = idxcolelements_->import(idxrowelements, elementimporter, Insert);
+    err = idxcolelements_->import(idxrowelements, elementimporter.get_epetra_import(), Insert);
     if (err) FOUR_C_THROW("Import using importer returned err={}", err);
   }
 
@@ -523,17 +525,17 @@ int Core::DOFSets::DofSet::assign_degrees_of_freedom(
     std::copy(dofs.begin(), dofs.end(), std::back_inserter(localcoldofs));
   }
 
-  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(-1, localrowdofs.size(), localrowdofs.data(), 0,
-      Core::Communication::as_epetra_comm(dis.get_comm()));
+  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, localrowdofs.size(), localrowdofs.data(), 0, dis.get_comm());
   if (!dofrowmap_->UniqueGIDs()) FOUR_C_THROW("Dof row map is not unique");
-  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(-1, localcoldofs.size(), localcoldofs.data(), 0,
-      Core::Communication::as_epetra_comm(dis.get_comm()));
+  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, localcoldofs.size(), localcoldofs.data(), 0, dis.get_comm());
 
   // **********************************************************************
   // **********************************************************************
   // build map of all (non-unique) column DoFs
-  dofscolnodes_ = std::make_shared<Core::LinAlg::Map>(-1, allnodelocalcoldofs.size(),
-      allnodelocalcoldofs.data(), 0, Core::Communication::as_epetra_comm(dis.get_comm()));
+  dofscolnodes_ = std::make_shared<Core::LinAlg::Map>(
+      -1, allnodelocalcoldofs.size(), allnodelocalcoldofs.data(), 0, dis.get_comm());
 
   // build shift vector
   shiftcolnodes_ = std::make_shared<Core::LinAlg::Vector<int>>(*dis.node_col_map());

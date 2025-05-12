@@ -116,7 +116,7 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::setup()
   }
 
   // conditions for beam penalty point coupling
-  std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
+  std::vector<const Core::Conditions::Condition*> beampenaltycouplingconditions;
   discret().get_condition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
   {
@@ -524,11 +524,11 @@ void BeamInteraction::SubmodelEvaluator::BeamContact::write_output_runtime_beam_
   point_coordinates.reserve(num_spatial_dimensions * num_row_points);
 
   // contact force values: collect data and append to visualization results if desired
-  std::vector<double> contact_force_vector(0);
+  std::vector<double> contact_force_vector;
   contact_force_vector.reserve(num_spatial_dimensions * num_row_points);
 
   // gap values: collect data and append to visualization results if desired
-  std::vector<double> gaps(0);
+  std::vector<double> gaps;
   gaps.reserve(num_row_points);
 
   // loop over my points and collect the geometry/grid data, i.e. contact points

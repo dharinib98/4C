@@ -931,7 +931,7 @@ void PoroPressureBased::PorofluidAlgorithm::evaluate_valid_volume_frac_press_and
 void PoroPressureBased::PorofluidAlgorithm::apply_additional_dbc_for_vol_frac_press()
 {
   const Core::LinAlg::Map* elecolmap = discret_->element_col_map();
-  std::vector<int> mydirichdofs(0);
+  std::vector<int> mydirichdofs;
 
   // we identify the volume fraction pressure dofs which do not have a physical meaning and set
   // a DBC on them
@@ -984,9 +984,8 @@ void PoroPressureBased::PorofluidAlgorithm::apply_additional_dbc_for_vol_frac_pr
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  std::shared_ptr<Core::LinAlg::Map> dirichmap =
-      std::make_shared<Core::LinAlg::Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
-          Core::Communication::as_epetra_comm(discret_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> dirichmap = std::make_shared<Core::LinAlg::Map>(
+      -1, nummydirichvals, mydirichdofs.data(), 0, discret_->get_comm());
 
   // build vector of maps
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> condmaps;
@@ -1003,7 +1002,7 @@ void PoroPressureBased::PorofluidAlgorithm::apply_additional_dbc_for_vol_frac_pr
 void PoroPressureBased::PorofluidAlgorithm::apply_starting_dbc()
 {
   const auto& elecolmap = *discret_->element_col_map();
-  std::vector<int> dirichlet_dofs(0);
+  std::vector<int> dirichlet_dofs;
   const int num_poro_dofs = discret_->num_dof(0, discret_->l_row_node(0));
 
   for (int ele_idx = 0; ele_idx < elecolmap.NumMyElements(); ++ele_idx)
@@ -1044,9 +1043,8 @@ void PoroPressureBased::PorofluidAlgorithm::apply_starting_dbc()
   }
 
   // build combined DBC map
-  std::shared_ptr<Core::LinAlg::Map> additional_map =
-      std::make_shared<Core::LinAlg::Map>(-1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0,
-          Core::Communication::as_epetra_comm(discret_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> additional_map = std::make_shared<Core::LinAlg::Map>(
+      -1, dirichlet_dofs.size(), dirichlet_dofs.data(), 0, discret_->get_comm());
 
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> condition_maps;
   condition_maps.emplace_back(additional_map);
@@ -1943,7 +1941,7 @@ void PoroPressureBased::PorofluidAlgorithm::set_initial_field(
       const int numdof = discret_->num_dof(0, discret_->l_row_node(0));
 
       // get initial field conditions
-      std::vector<Core::Conditions::Condition*> initfieldconditions(0);
+      std::vector<const Core::Conditions::Condition*> initfieldconditions;
       discret_->get_condition("Initfield", initfieldconditions);
 
       if (not initfieldconditions.size())

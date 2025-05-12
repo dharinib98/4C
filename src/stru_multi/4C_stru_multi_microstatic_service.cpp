@@ -23,7 +23,7 @@ void MultiScale::MicroStatic::determine_toggle()
                // creation of vectors and matrices for homogenization
                // procedure
 
-  std::vector<Core::Conditions::Condition*> conds;
+  std::vector<const Core::Conditions::Condition*> conds;
   discret_->get_condition("MicroBoundary", conds);
   for (auto& cond : conds)
   {
@@ -89,21 +89,20 @@ void MultiScale::MicroStatic::set_up_homogenization()
   }
 
   // create map based on the determined dofs of prescribed and free nodes
-  pdof_ = std::make_shared<Core::LinAlg::Map>(
-      -1, np_, pdof.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
-  fdof_ = std::make_shared<Core::LinAlg::Map>(
-      -1, ndof_ - np_, fdof.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
+  pdof_ = std::make_shared<Core::LinAlg::Map>(-1, np_, pdof.data(), 0, discret_->get_comm());
+  fdof_ =
+      std::make_shared<Core::LinAlg::Map>(-1, ndof_ - np_, fdof.data(), 0, discret_->get_comm());
 
   // create importer
-  importp_ = std::make_shared<Epetra_Import>(
+  importp_ = std::make_shared<Core::LinAlg::Import>(
       pdof_->get_epetra_map(), (discret_->dof_row_map())->get_epetra_map());
-  importf_ = std::make_shared<Epetra_Import>(
+  importf_ = std::make_shared<Core::LinAlg::Import>(
       fdof_->get_epetra_map(), (discret_->dof_row_map())->get_epetra_map());
 
   // create vector containing material coordinates of prescribed nodes
   Core::LinAlg::Vector<double> Xp_temp(*pdof_);
 
-  std::vector<Core::Conditions::Condition*> conds;
+  std::vector<const Core::Conditions::Condition*> conds;
   discret_->get_condition("MicroBoundary", conds);
   for (auto& cond : conds)
   {

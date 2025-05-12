@@ -11,13 +11,13 @@
 #include "4C_linalg_serialdensematrix.hpp"
 #include "4C_linalg_serialdensevector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_densematrix_multiply.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
 #include "4C_linalg_vector.hpp"
 #include "4C_utils_exceptions.hpp"
 
-#include <Epetra_Import.h>
 #include <Teuchos_SerialDenseSolver.hpp>
 
 FOUR_C_NAMESPACE_OPEN
@@ -514,7 +514,7 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
 
   // do stupid conversion into Epetra map
   Core::LinAlg::Map mv1map(mv1->Map().NumGlobalElements(), mv1->Map().NumMyElements(),
-      mv1->Map().MyGlobalElements(), 0, mv1->Map().Comm());
+      mv1->Map().MyGlobalElements(), 0, Core::Communication::unpack_epetra_comm(mv1->Map().Comm()));
   // initialization of mat with map of mv1
   std::shared_ptr<Core::LinAlg::SparseMatrix> mat =
       std::make_shared<Core::LinAlg::SparseMatrix>(mv1map, glob_numnonzero, false);
@@ -528,16 +528,16 @@ Core::LinAlg::KrylovProjector::multiply_multi_vector_multi_vector(
 
   // do stupid conversion into Epetra map
   Core::LinAlg::Map mv2map(mv2->Map().NumGlobalElements(), mv2->Map().NumMyElements(),
-      mv2->Map().MyGlobalElements(), 0, mv2->Map().Comm());
+      mv2->Map().MyGlobalElements(), 0, Core::Communication::unpack_epetra_comm(mv2->Map().Comm()));
 
   // fully redundant/overlapping map
   std::shared_ptr<Core::LinAlg::Map> redundant_map = Core::LinAlg::allreduce_e_map(mv2map);
   // initialize global mv2 without setting to 0
   Core::LinAlg::MultiVector<double> mv2glob(*redundant_map, nsdim_);
   // create importer with redundant target map and distributed source map
-  Epetra_Import importer(redundant_map->get_epetra_map(), mv2->Map());
+  Core::LinAlg::Import importer(redundant_map->get_epetra_map(), mv2->Map());
   // import values to global mv2
-  mv2glob.Import(*mv2, importer, Insert);
+  mv2glob.Import(*mv2, importer.get_epetra_import(), Insert);
 
   //--------------------------------------------------------
   // compute mat by multiplying upright mv1 with lying mv2^T:

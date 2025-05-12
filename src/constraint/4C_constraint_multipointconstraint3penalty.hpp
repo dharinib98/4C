@@ -113,7 +113,7 @@ namespace Constraints
     //! creating a new discretization based on conditions containing constraint elements
     std::map<int, std::shared_ptr<Core::FE::Discretization>> create_discretization_from_condition(
         std::shared_ptr<Core::FE::Discretization> actdisc,
-        std::vector<Core::Conditions::Condition*>
+        std::span<const Core::Conditions::Condition*>
             constrcond,                   ///< conditions as discretization basis
         const std::string& discret_name,  ///< name of new discretization
         const std::string& element_name,  ///< name of element type to create
@@ -128,7 +128,7 @@ namespace Constraints
         eletocondvecindex_;  ///< maps element ID to condition index in vector #constrcond_
     std::map<int, double> penalties_;  ///< maps condition ID to penalty factor
     std::shared_ptr<Epetra_Export> errorexport_;
-    std::shared_ptr<Epetra_Import> errorimport_;
+    std::shared_ptr<Core::LinAlg::Import> errorimport_;
     std::shared_ptr<Core::LinAlg::Map> rederrormap_;
     std::shared_ptr<Core::LinAlg::Map> errormap_;
     std::shared_ptr<Core::LinAlg::Vector<double>> initerror_;

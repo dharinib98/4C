@@ -115,7 +115,7 @@ PoroPressureBased::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_for
   // entirely
 
   int artelematerial = contdis_->name() == "scatra" ? 1 : 0;
-  std::vector<int> mydirichdofs(0);
+  std::vector<int> mydirichdofs;
 
   const int numrownodes = arterydis_->num_my_row_nodes();
   const Core::LinAlg::Map* dofrowmap = arterydis_->dof_row_map();
@@ -153,9 +153,8 @@ PoroPressureBased::PoroMultiPhaseScaTraArtCouplLineBased::get_additional_dbc_for
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  std::shared_ptr<Core::LinAlg::Map> dirichmap =
-      std::make_shared<Core::LinAlg::Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
-          Core::Communication::as_epetra_comm(arterydis_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> dirichmap = std::make_shared<Core::LinAlg::Map>(
+      -1, nummydirichvals, mydirichdofs.data(), 0, arterydis_->get_comm());
 
   // build vector of maps
   std::vector<std::shared_ptr<const Core::LinAlg::Map>> condmaps;

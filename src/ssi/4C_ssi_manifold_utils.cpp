@@ -34,8 +34,8 @@ FOUR_C_NAMESPACE_OPEN
 SSI::ManifoldScaTraCoupling::ManifoldScaTraCoupling(
     std::shared_ptr<Core::FE::Discretization> manifolddis,
     std::shared_ptr<Core::FE::Discretization> scatradis,
-    Core::Conditions::Condition* condition_manifold,
-    Core::Conditions::Condition* condition_kinetics, const int ndof_per_node)
+    const Core::Conditions::Condition* condition_manifold,
+    const Core::Conditions::Condition* condition_kinetics, const int ndof_per_node)
     : condition_kinetics_(condition_kinetics),
       condition_manifold_(condition_manifold),
       coupling_adapter_(std::make_shared<Coupling::Adapter::Coupling>()),
@@ -114,11 +114,11 @@ SSI::ScaTraManifoldScaTraFluxEvaluator::ScaTraManifoldScaTraFluxEvaluator(
   if (ssi_mono.scatra_field()->num_dof_per_node() != ssi_mono.scatra_manifold()->num_dof_per_node())
     FOUR_C_THROW("Number of dofs per node of scatra field and scatra manifold field must be equal");
 
-  std::vector<Core::Conditions::Condition*> conditions_manifold;
+  std::vector<const Core::Conditions::Condition*> conditions_manifold;
   scatra_manifold_->scatra_field()->discretization()->get_condition(
       "SSISurfaceManifold", conditions_manifold);
 
-  std::vector<Core::Conditions::Condition*> conditions_manifold_kinetics_scatra;
+  std::vector<const Core::Conditions::Condition*> conditions_manifold_kinetics_scatra;
   scatra_->scatra_field()->discretization()->get_condition(
       "SSISurfaceManifoldKinetics", conditions_manifold_kinetics_scatra);
 
@@ -953,13 +953,12 @@ SSI::ManifoldMeshTyingStrategyBlock::intersect_coupling_maps_block_map(
     }
   }
 
-  auto intersected_map =
-      std::make_shared<Core::LinAlg::Map>(-1, static_cast<int>(intersecting_map_vec.size()),
-          intersecting_map_vec.data(), 0, Core::Communication::as_epetra_comm(comm));
+  auto intersected_map = std::make_shared<Core::LinAlg::Map>(
+      -1, static_cast<int>(intersecting_map_vec.size()), intersecting_map_vec.data(), 0, comm);
 
   auto permuted_intersected_map = std::make_shared<Core::LinAlg::Map>(-1,
       static_cast<int>(permuted_intersecting_map_vec.size()), permuted_intersecting_map_vec.data(),
-      0, Core::Communication::as_epetra_comm(comm));
+      0, comm);
 
   return {intersected_map, permuted_intersected_map};
 }

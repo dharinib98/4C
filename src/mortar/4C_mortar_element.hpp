@@ -475,7 +475,7 @@ namespace Mortar
     */
     std::vector<std::shared_ptr<Core::Elements::Element>> lines() override
     {
-      std::vector<std::shared_ptr<Core::Elements::Element>> lines(0);
+      std::vector<std::shared_ptr<Core::Elements::Element>> lines;
       return lines;
     }
 
@@ -485,7 +485,7 @@ namespace Mortar
     */
     std::vector<std::shared_ptr<Core::Elements::Element>> surfaces() override
     {
-      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces(0);
+      std::vector<std::shared_ptr<Core::Elements::Element>> surfaces;
       return surfaces;
     }
 
@@ -690,7 +690,7 @@ namespace Mortar
     \return 0 if successful, negative otherwise
     */
     int evaluate_neumann(Teuchos::ParameterList& params, Core::FE::Discretization& discretization,
-        Core::Conditions::Condition& condition, std::vector<int>& lm,
+        const Core::Conditions::Condition& condition, std::vector<int>& lm,
         Core::LinAlg::SerialDenseVector& elevec1,
         Core::LinAlg::SerialDenseMatrix* elemat1 = nullptr) override
     {

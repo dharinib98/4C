@@ -83,8 +83,8 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
     dofrowvec.push_back(*idof);
   }
 
-  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(-1, dofrowvec.size(), dofrowvec.data(), 0,
-      Core::Communication::as_epetra_comm(newdis.get_comm()));
+  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -123,8 +123,8 @@ void Core::DOFSets::TransparentDofSet::transfer_degrees_of_freedom(
     dofcolvec.push_back(*idof);
   }
 
-  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(-1, dofcolvec.size(), dofcolvec.data(), 0,
-      Core::Communication::as_epetra_comm(newdis.get_comm()));
+  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
 }
 
 /// Assign dof numbers for new discretization using dof numbering from source discretization.
@@ -210,7 +210,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
   }
 
   std::set<int> slaveset;
-  std::vector<Core::Conditions::Condition*> mypbcs;
+  std::vector<const Core::Conditions::Condition*> mypbcs;
 
   // get periodic surface boundary conditions
   sourcedis_->get_condition("SurfacePeriodic", mypbcs);
@@ -222,7 +222,7 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
 
   for (unsigned numcond = 0; numcond < mypbcs.size(); ++numcond)
   {
-    Core::Conditions::Condition* thiscond = mypbcs[numcond];
+    const Core::Conditions::Condition* thiscond = mypbcs[numcond];
 
     // see whether we have a slave condition
     const std::string& mymasterslavetoggle =
@@ -284,8 +284,8 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     dofrowvec.push_back(*idof);
   }
 
-  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(-1, dofrowvec.size(), dofrowvec.data(), 0,
-      Core::Communication::as_epetra_comm(newdis.get_comm()));
+  dofrowmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, dofrowvec.size(), dofrowvec.data(), 0, newdis.get_comm());
 
   // build dofcolvec
   std::set<int> dofcolset;
@@ -318,8 +318,8 @@ void Core::DOFSets::TransparentDofSet::parallel_transfer_degrees_of_freedom(
     dofcolvec.push_back(*idof);
   }
 
-  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(-1, dofcolvec.size(), dofcolvec.data(), 0,
-      Core::Communication::as_epetra_comm(newdis.get_comm()));
+  dofcolmap_ = std::make_shared<Core::LinAlg::Map>(
+      -1, dofcolvec.size(), dofcolvec.data(), 0, newdis.get_comm());
 
 
   return;

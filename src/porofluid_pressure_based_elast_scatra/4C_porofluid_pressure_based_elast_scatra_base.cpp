@@ -150,10 +150,10 @@ void PoroPressureBased::PoroMultiPhaseScaTraBase::init(
     scatramsht_->check_initial_fields();
   }
 
-  std::vector<int> mydirichdofs(0);
+  std::vector<int> mydirichdofs;
   add_dirichmaps_volfrac_spec_ = std::make_shared<Core::LinAlg::Map>(-1, 0, mydirichdofs.data(), 0,
-      Core::Communication::as_epetra_comm(
-          scatra_algo()->scatra_field()->discretization()->get_comm()));
+
+      scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // done.
 }
@@ -316,7 +316,7 @@ void PoroPressureBased::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vol_f
   // remove the old one
   scatra_algo()->scatra_field()->remove_dirich_cond(add_dirichmaps_volfrac_spec_);
 
-  std::vector<int> mydirichdofs(0);
+  std::vector<int> mydirichdofs;
 
   // get map and validdof-vector
   const Core::LinAlg::Map* elecolmap =
@@ -412,10 +412,8 @@ void PoroPressureBased::PoroMultiPhaseScaTraBase::apply_additional_dbc_for_vol_f
 
   // build map
   int nummydirichvals = mydirichdofs.size();
-  add_dirichmaps_volfrac_spec_ =
-      std::make_shared<Core::LinAlg::Map>(-1, nummydirichvals, mydirichdofs.data(), 0,
-          Core::Communication::as_epetra_comm(
-              scatra_algo()->scatra_field()->discretization()->get_comm()));
+  add_dirichmaps_volfrac_spec_ = std::make_shared<Core::LinAlg::Map>(-1, nummydirichvals,
+      mydirichdofs.data(), 0, scatra_algo()->scatra_field()->discretization()->get_comm());
 
   // add the condition
   scatra_algo()->scatra_field()->add_dirich_cond(add_dirichmaps_volfrac_spec_);

@@ -1471,7 +1471,7 @@ void CONTACT::SelfBinaryTree::search_contact()
   // STEP 2: distribute roots among all processors
   //**********************************************************************
   // introduce some parallelization for multibody contact
-  std::vector<int> myroots(0);
+  std::vector<int> myroots;
   int nproc = Core::Communication::num_mpi_ranks(get_comm());
   int nroot = (int)roots_.size();
   int ratio = nroot / nproc;
@@ -1562,8 +1562,7 @@ void CONTACT::SelfBinaryTree::search_contact()
     int gid = elements_->GID(i);
     if (contactpairs_.find(gid) != contactpairs_.end()) locdata.push_back(gid);
   }
-  Core::LinAlg::Map mymap(
-      -1, (int)locdata.size(), locdata.data(), 0, Core::Communication::as_epetra_comm(get_comm()));
+  Core::LinAlg::Map mymap(-1, (int)locdata.size(), locdata.data(), 0, get_comm());
   std::shared_ptr<Core::LinAlg::Map> redmap = Core::LinAlg::allreduce_e_map(mymap);
   Core::Communication::Exporter ex(mymap, *redmap, get_comm());
   ex.do_export(contactpairs_);

@@ -546,14 +546,14 @@ void PARTICLEWALL::WallHandlerDiscretCondition::init_wall_discretization()
   if (not structurediscretization->filled()) structurediscretization->fill_complete();
 
   // get all particle wall conditions
-  std::vector<Core::Conditions::Condition*> conditions;
+  std::vector<const Core::Conditions::Condition*> conditions;
   structurediscretization->get_condition("ParticleWall", conditions);
 
   // iterate over particle wall conditions
   for (int i = 0; i < static_cast<int>(conditions.size()); ++i)
   {
     // set current particle wall condition
-    std::vector<Core::Conditions::Condition*> currcondition(0);
+    std::vector<const Core::Conditions::Condition*> currcondition;
     currcondition.push_back(conditions[i]);
 
     // get material id for current particle wall condition
@@ -641,8 +641,8 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
   create_wall_discretization();
 
   // init vector of node and element ids
-  std::vector<int> nodeids(0);
-  std::vector<int> eleids(0);
+  std::vector<int> nodeids;
+  std::vector<int> eleids;
 
   // generate wall discretization from bounding box on first processor
   if (myrank_ == 0)
@@ -737,17 +737,15 @@ void PARTICLEWALL::WallHandlerBoundingBox::init_wall_discretization()
   }
 
   // node row map of wall elements
-  std::shared_ptr<Core::LinAlg::Map> noderowmap =
-      std::make_shared<Core::LinAlg::Map>(-1, nodeids.size(), nodeids.data(), 0,
-          Core::Communication::as_epetra_comm(walldiscretization_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> noderowmap = std::make_shared<Core::LinAlg::Map>(
+      -1, nodeids.size(), nodeids.data(), 0, walldiscretization_->get_comm());
 
   // fully overlapping node column map
   std::shared_ptr<Core::LinAlg::Map> nodecolmap = Core::LinAlg::allreduce_e_map(*noderowmap);
 
   // element row map of wall elements
-  std::shared_ptr<Core::LinAlg::Map> elerowmap =
-      std::make_shared<Core::LinAlg::Map>(-1, eleids.size(), eleids.data(), 0,
-          Core::Communication::as_epetra_comm(walldiscretization_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> elerowmap = std::make_shared<Core::LinAlg::Map>(
+      -1, eleids.size(), eleids.data(), 0, walldiscretization_->get_comm());
 
   // fully overlapping element column map
   std::shared_ptr<Core::LinAlg::Map> elecolmap = Core::LinAlg::allreduce_e_map(*elerowmap);

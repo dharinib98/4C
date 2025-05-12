@@ -52,11 +52,11 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   if (sourcedis_ == nullptr) FOUR_C_THROW("No source discretization assigned to mapping dof set!");
 
   // get condition which defines the coupling on target discretization
-  std::vector<Core::Conditions::Condition*> conds;
+  std::vector<const Core::Conditions::Condition*> conds;
   dis.get_condition(couplingcond_, conds);
 
   // get condition which defines the coupling on source discretization
-  std::vector<Core::Conditions::Condition*> conds_source;
+  std::vector<const Core::Conditions::Condition*> conds_source;
   sourcedis_->get_condition(couplingcond_, conds_source);
 
   // get the respective nodes which are in the condition
@@ -141,11 +141,9 @@ int Core::DOFSets::DofSetDefinedMappingWrapper::assign_degrees_of_freedom(
   }
 
   // Epetra maps
-  Core::LinAlg::Map targetnodemap(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0,
-      Core::Communication::as_epetra_comm(com));
+  Core::LinAlg::Map targetnodemap(-1, patchedtargetnodes.size(), patchedtargetnodes.data(), 0, com);
 
-  Core::LinAlg::Map permsourcenodemap(-1, permsourcenodes.size(), permsourcenodes.data(), 0,
-      Core::Communication::as_epetra_comm(com));
+  Core::LinAlg::Map permsourcenodemap(-1, permsourcenodes.size(), permsourcenodes.data(), 0, com);
 
   // we expect to get maps of exactly the same shape
   if (not targetnodemap.PointSameAs(permsourcenodemap))

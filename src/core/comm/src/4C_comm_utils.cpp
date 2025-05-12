@@ -10,10 +10,10 @@
 #include "4C_io_pstream.hpp"
 #include "4C_linalg_multi_vector.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_manipulation.hpp"
 
-#include <Epetra_Import.h>
 #include <Epetra_Map.h>
 
 #include <iomanip>
@@ -43,7 +43,7 @@ namespace Core::Communication
     NestedParallelismType npType = NestedParallelismType::no_nested_parallelism;
 
     // parse command line and separate configuration arguments
-    std::vector<std::string> conf(0);
+    std::vector<std::string> conf;
     for (std::size_t i = 1; i < argv.size(); i++)
     {
       std::string temp = argv[i];
@@ -351,7 +351,7 @@ namespace Core::Communication
     // do stupid conversion from Epetra_BlockMap to Core::LinAlg::Map
     const Epetra_BlockMap& vecblockmap = vec.Map();
     Core::LinAlg::Map vecmap(vecblockmap.NumGlobalElements(), vecblockmap.NumMyElements(),
-        vecblockmap.MyGlobalElements(), 0, Core::Communication::as_epetra_comm(vec.Comm()));
+        vecblockmap.MyGlobalElements(), 0, vec.Comm());
 
     // gather data of vector to compare on gcomm proc 0 and last gcomm proc
     std::shared_ptr<Core::LinAlg::Map> proc0map;
@@ -510,7 +510,7 @@ namespace Core::Communication
           domainmap, Core::Communication::num_mpi_ranks(lcomm) - 1);
 
     // export full matrices to the two desired processors
-    Epetra_Import serialimporter(serialrowmap->get_epetra_map(), rowmap.get_epetra_map());
+    Core::LinAlg::Import serialimporter(serialrowmap->get_epetra_map(), rowmap.get_epetra_map());
     Core::LinAlg::SparseMatrix serialCrsMatrix(*serialrowmap, 0);
     serialCrsMatrix.import(matrix, serialimporter, Insert);
     serialCrsMatrix.complete(*serialdomainmap, *serialrowmap);

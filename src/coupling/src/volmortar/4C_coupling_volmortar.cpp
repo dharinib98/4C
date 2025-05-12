@@ -164,8 +164,7 @@ void Coupling::VolMortar::VolMortarCoupl::build_maps(std::shared_ptr<Core::FE::D
     }
   }
   // dof map is the original, unpermuted distribution of dofs
-  dofmap = std::make_shared<Core::LinAlg::Map>(
-      -1, dofmapvec.size(), dofmapvec.data(), 0, Core::Communication::as_epetra_comm(comm_));
+  dofmap = std::make_shared<Core::LinAlg::Map>(-1, dofmapvec.size(), dofmapvec.data(), 0, comm_);
 
   return;
 }
@@ -4727,7 +4726,7 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
   // (2) General clipping polygon: Triangulation -> IntCells
   //**********************************************************************
   // store Delaunay triangles here
-  std::vector<std::vector<int>> triangles(0, std::vector<int>(3));
+  std::vector<std::vector<int>> triangles;
 
   // start with first triangle v0,v1,v2
   std::vector<int> currtriangle(3);
@@ -4915,8 +4914,8 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
     }
 
     // now we build vector of all good / bad triangles
-    std::vector<std::vector<int>> goodtriangles(0, std::vector<int>(3));
-    std::vector<std::vector<int>> badtriangles(0, std::vector<int>(3));
+    std::vector<std::vector<int>> goodtriangles;
+    std::vector<std::vector<int>> badtriangles;
     for (int t = 0; t < numt; ++t)
     {
       if (bad[t])
@@ -4927,8 +4926,8 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
 
     // find vertices in bad triangles: ALL vertices
     // find vertices in bad triangles: NOT connected with current vertex
-    std::vector<int> badv(0);
-    std::vector<int> ncv(0);
+    std::vector<int> badv;
+    std::vector<int> ncv;
     for (int t = 0; t < numt; ++t)
     {
       if (bad[t])
@@ -4996,7 +4995,7 @@ bool Coupling::VolMortar::VolMortarCoupl::delaunay_triangulation(
     }
 
     // build triangles formed by current vertex and ncv vertices
-    std::vector<std::vector<int>> addtriangles(0, std::vector<int>(3));
+    std::vector<std::vector<int>> addtriangles;
     for (int k = 0; k < (int)ncv.size(); ++k)
     {
       // find ncv vertex neighbor0

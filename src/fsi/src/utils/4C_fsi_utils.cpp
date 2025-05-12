@@ -18,6 +18,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io.hpp"
 #include "4C_io_control.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
 #include "4C_linalg_utils_sparse_algebra_create.hpp"
@@ -249,11 +250,11 @@ void FSI::Utils::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
-  Epetra_Import msimpo(dofrowmap->get_epetra_map(), structdofrowmap_->get_epetra_map());
-  Epetra_Import slimpo(dofrowmap->get_epetra_map(), fluiddofrowmap_->get_epetra_map());
+  Core::LinAlg::Import msimpo(dofrowmap->get_epetra_map(), structdofrowmap_->get_epetra_map());
+  Core::LinAlg::Import slimpo(dofrowmap->get_epetra_map(), fluiddofrowmap_->get_epetra_map());
 
-  idispms_->import(*idisptotal, msimpo, Add);
-  idispms_->import(iprojdispale, slimpo, Add);
+  idispms_->import(*idisptotal, msimpo.get_epetra_import(), Add);
+  idispms_->import(iprojdispale, slimpo.get_epetra_import(), Add);
 
   iprojhist_->update(1.0, iprojdispale, 0.0);
 
@@ -270,11 +271,15 @@ void FSI::Utils::SlideAleUtils::evaluate_mortar(Core::LinAlg::Vector<double>& id
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
-  Epetra_Import master_importer(dofrowmap->get_epetra_map(), structdofrowmap_->get_epetra_map());
-  Epetra_Import slave_importer(dofrowmap->get_epetra_map(), fluiddofrowmap_->get_epetra_map());
+  Core::LinAlg::Import master_importer(
+      dofrowmap->get_epetra_map(), structdofrowmap_->get_epetra_map());
+  Core::LinAlg::Import slave_importer(
+      dofrowmap->get_epetra_map(), fluiddofrowmap_->get_epetra_map());
 
-  if (idispms_->import(idispstruct, master_importer, Add)) FOUR_C_THROW("Import operation failed.");
-  if (idispms_->import(idispfluid, slave_importer, Add)) FOUR_C_THROW("Import operation failed.");
+  if (idispms_->import(idispstruct, master_importer.get_epetra_import(), Add))
+    FOUR_C_THROW("Import operation failed.");
+  if (idispms_->import(idispfluid, slave_importer.get_epetra_import(), Add))
+    FOUR_C_THROW("Import operation failed.");
 
   // new D,M,Dinv out of disp of struct and fluid side
   coupsf.evaluate(idispms_);
@@ -444,10 +449,11 @@ void FSI::Utils::SlideAleUtils::slide_projection(
   std::shared_ptr<Core::LinAlg::Vector<double>> idispnp = structure.extract_interface_dispnp();
 
   // Redistribute displacement of structnodes on the interface to all processors.
-  Epetra_Import interimpo(structfullnodemap_->get_epetra_map(), structdofrowmap_->get_epetra_map());
+  Core::LinAlg::Import interimpo(
+      structfullnodemap_->get_epetra_map(), structdofrowmap_->get_epetra_map());
   std::shared_ptr<Core::LinAlg::Vector<double>> reddisp =
       Core::LinAlg::create_vector(*structfullnodemap_, true);
-  reddisp->import(*idispnp, interimpo, Add);
+  reddisp->import(*idispnp, interimpo.get_epetra_import(), Add);
 
   Core::FE::Discretization& interfacedis = coupsf.interface()->discret();
   std::map<int, double> rotrat;
@@ -622,8 +628,8 @@ void FSI::Utils::SlideAleUtils::redundant_elements(
 
     Core::Communication::sum_all(&partsum, &globsum, 1, comm);
     // map with ele ids
-    Core::LinAlg::Map mstruslideleids(globsum, vstruslideleids.size(), vstruslideleids.data(), 0,
-        Core::Communication::as_epetra_comm(comm));
+    Core::LinAlg::Map mstruslideleids(
+        globsum, vstruslideleids.size(), vstruslideleids.data(), 0, comm);
     // redundant version of it
     Core::LinAlg::Map redmstruslideleids(*Core::LinAlg::allreduce_e_map(mstruslideleids));
 

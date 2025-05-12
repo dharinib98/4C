@@ -72,12 +72,11 @@ Constraints::MPConstraint3Penalty::MPConstraint3Penalty(
       nummyele = numele;
     }
     // initialize maps and importer
-    errormap_ = std::make_shared<Core::LinAlg::Map>(
-        numele, nummyele, 0, Core::Communication::as_epetra_comm(actdisc_->get_comm()));
+    errormap_ = std::make_shared<Core::LinAlg::Map>(numele, nummyele, 0, actdisc_->get_comm());
     rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
     errorexport_ = std::make_shared<Epetra_Export>(
         rederrormap_->get_epetra_map(), errormap_->get_epetra_map());
-    errorimport_ = std::make_shared<Epetra_Import>(
+    errorimport_ = std::make_shared<Core::LinAlg::Import>(
         rederrormap_->get_epetra_map(), errormap_->get_epetra_map());
     acterror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
     initerror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
@@ -199,7 +198,7 @@ void Constraints::MPConstraint3Penalty::evaluate(Teuchos::ParameterList& params,
 std::map<int, std::shared_ptr<Core::FE::Discretization>>
 Constraints::MPConstraint3Penalty::create_discretization_from_condition(
     std::shared_ptr<Core::FE::Discretization> actdisc,
-    std::vector<Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
+    std::span<const Core::Conditions::Condition*> constrcondvec, const std::string& discret_name,
     const std::string& element_name, int& startID)
 {
   // start with empty map
@@ -218,7 +217,7 @@ Constraints::MPConstraint3Penalty::create_discretization_from_condition(
   // Loop all conditions in constrcondvec and build discretization for any condition ID
 
   int index = 0;  // counter for the index of condition in vector
-  std::vector<Core::Conditions::Condition*>::iterator conditer;
+  std::span<const Core::Conditions::Condition*>::iterator conditer;
   for (conditer = constrcondvec.begin(); conditer != constrcondvec.end(); conditer++)
   {
     // initialize a new discretization
@@ -314,15 +313,15 @@ Constraints::MPConstraint3Penalty::create_discretization_from_condition(
     // build unique node row map
     std::vector<int> boundarynoderowvec(rownodeset.begin(), rownodeset.end());
     rownodeset.clear();
-    Core::LinAlg::Map constraintnoderowmap(-1, boundarynoderowvec.size(), boundarynoderowvec.data(),
-        0, Core::Communication::as_epetra_comm(newdis->get_comm()));
+    Core::LinAlg::Map constraintnoderowmap(
+        -1, boundarynoderowvec.size(), boundarynoderowvec.data(), 0, newdis->get_comm());
     boundarynoderowvec.clear();
 
     // build overlapping node column map
     std::vector<int> constraintnodecolvec(colnodeset.begin(), colnodeset.end());
     colnodeset.clear();
-    Core::LinAlg::Map constraintnodecolmap(-1, constraintnodecolvec.size(),
-        constraintnodecolvec.data(), 0, Core::Communication::as_epetra_comm(newdis->get_comm()));
+    Core::LinAlg::Map constraintnodecolmap(
+        -1, constraintnodecolvec.size(), constraintnodecolvec.data(), 0, newdis->get_comm());
 
     constraintnodecolvec.clear();
     newdis->redistribute(constraintnoderowmap, constraintnodecolmap);
@@ -369,9 +368,8 @@ void Constraints::MPConstraint3Penalty::evaluate_constraint(
     Core::Elements::Element* actele = disc->l_col_element(i);
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
-    Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<std::shared_ptr<Core::Conditions::Condition>>(
-        "condition", Core::Utils::shared_ptr_from_ref(*cond));
+    const Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<const Core::Conditions::Condition*>("condition", cond);
 
     // computation only if time is larger or equal than initialization time for constraint
     if (inittimes_.find(condID)->second <= time)
@@ -459,9 +457,8 @@ void Constraints::MPConstraint3Penalty::evaluate_error(Core::FE::Discretization&
     Core::Elements::Element* actele = disc.l_col_element(i);
     int eid = actele->id();
     int condID = eletocond_id_.find(eid)->second;
-    Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
-    params.set<std::shared_ptr<Core::Conditions::Condition>>(
-        "condition", Core::Utils::shared_ptr_from_ref(*cond));
+    const Core::Conditions::Condition* cond = constrcond_[eletocondvecindex_.find(eid)->second];
+    params.set<const Core::Conditions::Condition*>("condition", cond);
 
     // get element location vector, dirichlet flags and ownerships
     std::vector<int> lm;

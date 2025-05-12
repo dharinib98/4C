@@ -311,12 +311,12 @@ void FLD::XWall::init_x_wall_maps()
       if (enriched) rowvec.push_back(xwallgid);
     }
 
-    xwallrownodemap_ = std::make_shared<Core::LinAlg::Map>(-1, (int)rowvec.size(), rowvec.data(), 0,
-        Core::Communication::as_epetra_comm(discret_->get_comm()));
+    xwallrownodemap_ = std::make_shared<Core::LinAlg::Map>(
+        -1, (int)rowvec.size(), rowvec.data(), 0, discret_->get_comm());
   }
 
   // get Dirichlet conditions
-  std::vector<Core::Conditions::Condition*> dircond;
+  std::vector<const Core::Conditions::Condition*> dircond;
   discret_->get_condition("FluidStressCalc", dircond);
 
   if (not dircond.empty())
@@ -337,8 +337,8 @@ void FLD::XWall::init_x_wall_maps()
 
     int gcount;
     Core::Communication::sum_all(&count, &gcount, 1, (discret_->get_comm()));
-    dircolnodemap_ = std::make_shared<Core::LinAlg::Map>(gcount, count, testcollect.data(), 0,
-        Core::Communication::as_epetra_comm(discret_->get_comm()));
+    dircolnodemap_ = std::make_shared<Core::LinAlg::Map>(
+        gcount, count, testcollect.data(), 0, discret_->get_comm());
   }  // end loop this conditions
   else
     FOUR_C_THROW("You need DESIGN FLUID STRESS CALC SURF CONDITIONS for xwall");
@@ -424,8 +424,8 @@ void FLD::XWall::init_wall_dist()
   }
   int count = (int)colvec.size();
 
-  xwallcolnodemap_ = std::make_shared<Core::LinAlg::Map>(
-      count, count, colvec.data(), 0, Core::Communication::as_epetra_comm(discret_->get_comm()));
+  xwallcolnodemap_ =
+      std::make_shared<Core::LinAlg::Map>(count, count, colvec.data(), 0, discret_->get_comm());
 
   for (int j = 0; j < xwallcolnodemap_->NumMyElements(); ++j)
   {
@@ -611,7 +611,7 @@ void FLD::XWall::setup_x_wall_dis()
     for (unsigned numcond = 0; numcond < allcond.size(); ++numcond)
     {
       // get condition
-      std::vector<Core::Conditions::Condition*> actcond;
+      std::vector<const Core::Conditions::Condition*> actcond;
       discret_->get_condition(allcond[numcond], actcond);
       // loop all condition of the current type
       for (unsigned numactcond = 0; numactcond < actcond.size(); ++numactcond)
@@ -710,8 +710,8 @@ void FLD::XWall::setup_l2_projection()
       }
     }
 
-    enrdofrowmap_ = std::make_shared<Core::LinAlg::Map>(-1, (int)enrdf.size(), enrdf.data(), 0,
-        Core::Communication::as_epetra_comm(xwdiscret_->get_comm()));
+    enrdofrowmap_ = std::make_shared<Core::LinAlg::Map>(
+        -1, (int)enrdf.size(), enrdf.data(), 0, xwdiscret_->get_comm());
 
     massmatrix_ = std::make_shared<Core::LinAlg::SparseMatrix>(*enrdofrowmap_, 108, false, true);
 

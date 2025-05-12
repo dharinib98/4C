@@ -188,8 +188,8 @@ void Constraints::ConstrManager::setup(
       nummyele = num_monitor_id_;
     }
     // initialize maps and importer
-    monitormap_ = std::make_shared<Core::LinAlg::Map>(
-        num_monitor_id_, nummyele, 0, Core::Communication::as_epetra_comm(actdisc_->get_comm()));
+    monitormap_ =
+        std::make_shared<Core::LinAlg::Map>(num_monitor_id_, nummyele, 0, actdisc_->get_comm());
     redmonmap_ = Core::LinAlg::allreduce_e_map(*monitormap_);
     monimpo_ = std::make_shared<Epetra_Export>(
         redmonmap_->get_epetra_map(), monitormap_->get_epetra_map());
@@ -228,7 +228,7 @@ void Constraints::ConstrManager::evaluate_force_stiff(const double time,
 
   // create the parameters for the discretization
   Teuchos::ParameterList p;
-  std::vector<Core::Conditions::Condition*> constrcond(0);
+  std::vector<const Core::Conditions::Condition*> constrcond;
   const Core::LinAlg::Map* dofrowmap = actdisc_->dof_row_map();
   constr_matrix_->reset();  //=Teuchos::rcp(new
                             // Core::LinAlg::SparseMatrix(*dofrowmap,numConstrID_,false,true));
@@ -305,7 +305,7 @@ void Constraints::ConstrManager::compute_error(
   check_is_init();
   check_is_setup();
 
-  std::vector<Core::Conditions::Condition*> constrcond(0);
+  std::vector<const Core::Conditions::Condition*> constrcond;
   Teuchos::ParameterList p;
   p.set("total time", time);
   actdisc_->set_state("displacement", *disp);
@@ -403,7 +403,7 @@ void Constraints::ConstrManager::update_tot_lagr_mult(Core::LinAlg::Vector<doubl
 void Constraints::ConstrManager::compute_monitor_values(
     std::shared_ptr<Core::LinAlg::Vector<double>> disp)
 {
-  std::vector<Core::Conditions::Condition*> monitcond(0);
+  std::vector<const Core::Conditions::Condition*> monitcond;
   monitorvalues_->put_scalar(0.0);
   Teuchos::ParameterList p;
   actdisc_->set_state("displacement", *disp);
@@ -415,7 +415,7 @@ void Constraints::ConstrManager::compute_monitor_values(
   areamonitor3d_->evaluate(p, actmonredundant);
   areamonitor2d_->evaluate(p, actmonredundant);
 
-  Epetra_Import monimpo(monitormap_->get_epetra_map(), redmonmap_->get_epetra_map());
+  Core::LinAlg::Import monimpo(monitormap_->get_epetra_map(), redmonmap_->get_epetra_map());
   monitorvalues_->export_to(actmonredundant, *monimpo_, Add);
 }
 
@@ -424,7 +424,7 @@ void Constraints::ConstrManager::compute_monitor_values(
 void Constraints::ConstrManager::compute_monitor_values(
     std::shared_ptr<const Core::LinAlg::Vector<double>> disp)
 {
-  std::vector<Core::Conditions::Condition*> monitcond(0);
+  std::vector<const Core::Conditions::Condition*> monitcond;
   monitorvalues_->put_scalar(0.0);
   Teuchos::ParameterList p;
   if (not actdisc_->dof_row_map()->SameAs(disp->get_block_map()))
@@ -448,7 +448,7 @@ void Constraints::ConstrManager::compute_monitor_values(
   areamonitor3d_->evaluate(p, actmonredundant);
   areamonitor2d_->evaluate(p, actmonredundant);
 
-  Epetra_Import monimpo(monitormap_->get_epetra_map(), redmonmap_->get_epetra_map());
+  Core::LinAlg::Import monimpo(monitormap_->get_epetra_map(), redmonmap_->get_epetra_map());
   monitorvalues_->export_to(actmonredundant, *monimpo_, Add);
 }
 

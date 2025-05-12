@@ -300,7 +300,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
 
   // conditions for beam penalty point coupling
-  std::vector<Core::Conditions::Condition*> beampenaltycouplingconditions(0);
+  std::vector<const Core::Conditions::Condition*> beampenaltycouplingconditions;
   discret_ptr_->get_condition("PenaltyPointCouplingCondition", beampenaltycouplingconditions);
   if (beampenaltycouplingconditions.size() > 0)
     submodeltypes_->insert(Inpar::BeamInteraction::submodel_beamcontact);
@@ -331,7 +331,7 @@ void Solid::ModelEvaluator::BeamInteraction::set_sub_model_types()
   // ---------------------------------------------------------------------------
   // check for beam potential-based interactions
   // ---------------------------------------------------------------------------
-  std::vector<Core::Conditions::Condition*> beampotconditions(0);
+  std::vector<const Core::Conditions::Condition*> beampotconditions;
   discret().get_condition("BeamPotentialLineCharge", beampotconditions);
   if (beampotconditions.size() > 0)
     submodeltypes_->insert(Inpar::BeamInteraction::submodel_potential);
@@ -355,7 +355,7 @@ void Solid::ModelEvaluator::BeamInteraction::init_and_setup_sub_model_evaluators
 
   // model map
   me_map_ptr_ = FourC::BeamInteraction::SubmodelEvaluator::build_model_evaluators(*submodeltypes_);
-  std::vector<enum Inpar::BeamInteraction::SubModelType> sorted_submodeltypes(0);
+  std::vector<enum Inpar::BeamInteraction::SubModelType> sorted_submodeltypes;
 
   // build and sort submodel vector
   me_vec_ptr_ = transform_to_vector(*me_map_ptr_, sorted_submodeltypes);
@@ -563,9 +563,8 @@ void Solid::ModelEvaluator::BeamInteraction::extend_ghosting()
 
   // build auxiliary bin col map
   std::vector<int> auxgids(colbins.begin(), colbins.end());
-  std::shared_ptr<Core::LinAlg::Map> auxmap =
-      std::make_shared<Core::LinAlg::Map>(-1, static_cast<int>(auxgids.size()), auxgids.data(), 0,
-          Core::Communication::as_epetra_comm(bindis_->get_comm()));
+  std::shared_ptr<Core::LinAlg::Map> auxmap = std::make_shared<Core::LinAlg::Map>(
+      -1, static_cast<int>(auxgids.size()), auxgids.data(), 0, bindis_->get_comm());
 
   std::shared_ptr<Core::LinAlg::Map> ia_elecolmap = binstrategy_->extend_element_col_map(
       ia_state_ptr_->get_bin_to_row_ele_map(), ia_state_ptr_->get_bin_to_row_ele_map(),

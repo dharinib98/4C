@@ -57,10 +57,12 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   }
 
   // build an importer
-  Epetra_Import dofrowimporter(full_model_dof_row_map_->get_epetra_map(), (reduced_basis->Map()));
+  Core::LinAlg::Import dofrowimporter(
+      full_model_dof_row_map_->get_epetra_map(), (reduced_basis->Map()));
   projmatrix_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       full_model_dof_row_map_->get_epetra_map(), reduced_basis->NumVectors(), true);
-  int err = projmatrix_->Import(*reduced_basis, dofrowimporter, Insert, nullptr);
+  int err =
+      projmatrix_->Import(*reduced_basis, dofrowimporter.get_epetra_import(), Insert, nullptr);
   if (err != 0) FOUR_C_THROW("POD projection matrix could not be mapped onto the dof map");
 
   // check row dimension
@@ -80,9 +82,9 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   // wrong
 
   // importers for reduced system
-  structrimpo_ = std::make_shared<Epetra_Import>(
+  structrimpo_ = std::make_shared<Core::LinAlg::Import>(
       structmapr_->get_epetra_map(), redstructmapr_->get_epetra_map());
-  structrinvimpo_ = std::make_shared<Epetra_Import>(
+  structrinvimpo_ = std::make_shared<Core::LinAlg::Import>(
       redstructmapr_->get_epetra_map(), structmapr_->get_epetra_map());
 
   return;
@@ -182,7 +184,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::extend_solution(
 void Cardiovascular0D::ProperOrthogonalDecomposition::multiply_multi_vectors(
     Core::LinAlg::MultiVector<double>& multivect1, char multivect1Trans,
     Core::LinAlg::MultiVector<double>& multivect2, char multivect2Trans, Core::LinAlg::Map& redmap,
-    Epetra_Import& impo, Core::LinAlg::MultiVector<double>& result)
+    Core::LinAlg::Import& impo, Core::LinAlg::MultiVector<double>& result)
 {
   // initialize temporary Core::LinAlg::MultiVector<double> (redmap: all procs hold all
   // elements/rows)
@@ -195,7 +197,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::multiply_multi_vectors(
 
   // import the result to a Core::LinAlg::MultiVector<double> whose elements/rows are distributed
   // over all procs
-  result.Import(multivect_temp, impo, Insert, nullptr);
+  result.Import(multivect_temp, impo.get_epetra_import(), Insert, nullptr);
 
   return;
 }
@@ -316,7 +318,7 @@ void Cardiovascular0D::ProperOrthogonalDecomposition::read_pod_basis_vectors_fro
   char* memblock = new char[mysize];
 
   // calculation of starting points in matrix for each processor
-  MPI_Comm comm(Core::Communication::unpack_epetra_comm(full_model_dof_row_map_->Comm()));
+  MPI_Comm comm(full_model_dof_row_map_->Comm());
   const int numproc(Core::Communication::num_mpi_ranks(comm));
   const int mypid(Core::Communication::my_mpi_rank(comm));
   std::vector<int> localnumbers(numproc, 0);

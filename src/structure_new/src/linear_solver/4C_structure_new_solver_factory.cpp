@@ -124,8 +124,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
     case Core::LinearSolver::PreconditionerType::block_teko:
     {
       // Create the beam and solid maps
-      std::vector<int> solidDofs(0);
-      std::vector<int> beamDofs(0);
+      std::vector<int> solidDofs;
+      std::vector<int> beamDofs;
 
       for (int i = 0; i < actdis.num_my_row_nodes(); i++)
       {
@@ -137,10 +137,10 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_structure_li
           actdis.dof(node, solidDofs);
       }
 
-      std::shared_ptr<Core::LinAlg::Map> rowmap1(new Core::LinAlg::Map(-1, solidDofs.size(),
-          solidDofs.data(), 0, Core::Communication::as_epetra_comm(actdis.get_comm())));
-      std::shared_ptr<Core::LinAlg::Map> rowmap2(new Core::LinAlg::Map(-1, beamDofs.size(),
-          beamDofs.data(), 0, Core::Communication::as_epetra_comm(actdis.get_comm())));
+      std::shared_ptr<Core::LinAlg::Map> rowmap1(
+          new Core::LinAlg::Map(-1, solidDofs.size(), solidDofs.data(), 0, actdis.get_comm()));
+      std::shared_ptr<Core::LinAlg::Map> rowmap2(
+          new Core::LinAlg::Map(-1, beamDofs.size(), beamDofs.data(), 0, actdis.get_comm()));
 
       std::vector<std::shared_ptr<const Core::LinAlg::Map>> maps;
       maps.emplace_back(rowmap1);
@@ -193,8 +193,8 @@ std::shared_ptr<Core::LinAlg::Solver> Solid::SOLVER::Factory::build_meshtying_co
   std::shared_ptr<Core::LinAlg::Solver> linsolver = nullptr;
 
   // get mortar information
-  std::vector<Core::Conditions::Condition*> mtcond(0);
-  std::vector<Core::Conditions::Condition*> ccond(0);
+  std::vector<const Core::Conditions::Condition*> mtcond;
+  std::vector<const Core::Conditions::Condition*> ccond;
   actdis.get_condition("Mortar", mtcond);
   actdis.get_condition("Contact", ccond);
   bool onlymeshtying = false;

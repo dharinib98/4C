@@ -10,8 +10,10 @@
 #include "4C_fem_discretization.hpp"
 #include "4C_fem_general_element.hpp"
 #include "4C_global_data.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_densematrix_communication.hpp"
 #include "4C_linalg_utils_sparse_algebra_assemble.hpp"
+#include "4C_mixture_rule_growthremodel.hpp"
 #include "4C_utils_function_of_time.hpp"
 
 #include <Epetra_Export.h>
@@ -44,12 +46,11 @@ Constraints::ConstraintPenalty::ConstraintPenalty(
       nummyele = numele;
     }
     // initialize maps and importer
-    errormap_ = std::make_shared<Core::LinAlg::Map>(
-        numele, nummyele, 0, Core::Communication::as_epetra_comm(actdisc_->get_comm()));
+    errormap_ = std::make_shared<Core::LinAlg::Map>(numele, nummyele, 0, actdisc_->get_comm());
     rederrormap_ = Core::LinAlg::allreduce_e_map(*errormap_);
     errorexport_ = std::make_shared<Epetra_Export>(
         rederrormap_->get_epetra_map(), errormap_->get_epetra_map());
-    errorimport_ = std::make_shared<Epetra_Import>(
+    errorimport_ = std::make_shared<Core::LinAlg::Import>(
         rederrormap_->get_epetra_map(), errormap_->get_epetra_map());
     acterror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
     initerror_ = std::make_shared<Core::LinAlg::Vector<double>>(*rederrormap_);
@@ -226,8 +227,7 @@ void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         (*lagrvalues_force_)[condID - 1] = (*lagrvalues_)[condID - 1] + rho_[condID] * diff;
 
       // elements might need condition
-      params.set<std::shared_ptr<Core::Conditions::Condition>>(
-          "condition", Core::Utils::shared_ptr_from_ref(*cond));
+      params.set<const Core::Conditions::Condition*>("condition", cond);
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -236,19 +236,18 @@ void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
       Core::LinAlg::SerialDenseVector elevector2;
       Core::LinAlg::SerialDenseVector elevector3;
 
-      std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
+      const auto& geom = cond->geometry();
       // if (geom.empty()) FOUR_C_THROW("evaluation of condition with empty geometry");
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-      for (curr = geom.begin(); curr != geom.end(); ++curr)
+      for (const auto& [id, ele] : geom)
       {
         // get element location vector and ownerships
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
+        ele->location_vector(*actdisc_, lm, lmowner, lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
@@ -259,7 +258,7 @@ void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->evaluate(
+        int err = ele->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -267,7 +266,7 @@ void Constraints::ConstraintPenalty::evaluate_constraint(Teuchos::ParameterList&
         elevector2 = elevector1;
 
         // assembly
-        int eid = curr->second->id();
+        int eid = ele->id();
 
         // scale with time integrator dependent value
         elematrix1.scale(diff);
@@ -321,8 +320,7 @@ void Constraints::ConstraintPenalty::evaluate_error(
     // if current time is larger than initialization time of the condition, start computing
     if (inittimes_.find(condID)->second <= time)
     {
-      params.set<std::shared_ptr<Core::Conditions::Condition>>(
-          "condition", Core::Utils::shared_ptr_from_ref(*cond));
+      params.set<const Core::Conditions::Condition*>("condition", cond);
 
       // define element matrices and vectors
       Core::LinAlg::SerialDenseMatrix elematrix1;
@@ -331,25 +329,24 @@ void Constraints::ConstraintPenalty::evaluate_error(
       Core::LinAlg::SerialDenseVector elevector2;
       Core::LinAlg::SerialDenseVector elevector3;
 
-      std::map<int, std::shared_ptr<Core::Elements::Element>>& geom = cond->geometry();
+      const auto& geom = cond->geometry();
       // no check for empty geometry here since in parallel computations
       // can exist processors which do not own a portion of the elements belonging
       // to the condition geometry
-      std::map<int, std::shared_ptr<Core::Elements::Element>>::iterator curr;
-      for (curr = geom.begin(); curr != geom.end(); ++curr)
+      for (const auto& [id, ele] : geom)
       {
         // get element location vector and ownerships
         std::vector<int> lm;
         std::vector<int> lmowner;
         std::vector<int> lmstride;
-        curr->second->location_vector(*actdisc_, lm, lmowner, lmstride);
+        ele->location_vector(*actdisc_, lm, lmowner, lmstride);
 
         // get dimension of element matrices and vectors
         // Reshape element matrices and vectors and init to zero
         elevector3.size(1);
 
         // call the element specific evaluate method
-        int err = curr->second->evaluate(
+        int err = ele->evaluate(
             params, *actdisc_, lm, elematrix1, elematrix2, elevector1, elevector2, elevector3);
         if (err) FOUR_C_THROW("error while evaluating elements");
 
@@ -358,7 +355,7 @@ void Constraints::ConstraintPenalty::evaluate_error(
         std::vector<int> constrlm;
         std::vector<int> constrowner;
         constrlm.push_back(condID - 1);
-        constrowner.push_back(curr->second->owner());
+        constrowner.push_back(ele->owner());
         Core::LinAlg::assemble(systemvector, elevector3, constrlm, constrowner);
       }
 

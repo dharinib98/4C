@@ -135,8 +135,8 @@ void XFEM::DiscretizationXFEM::export_initialto_active_vector(
     }
     else
     {
-      Epetra_Import importer(fullvec.get_block_map(), initialvec.get_block_map());
-      int err = fullvec.import(initialvec, importer, Insert);
+      Core::LinAlg::Import importer(fullvec.get_block_map(), initialvec.get_block_map());
+      int err = fullvec.import(initialvec, importer.get_epetra_import(), Insert);
       if (err) FOUR_C_THROW("Export using exporter returned err={}", err);
     }
   }

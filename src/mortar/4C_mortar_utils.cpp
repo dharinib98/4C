@@ -278,33 +278,10 @@ void Mortar::create_new_col_map(const Core::LinAlg::SparseMatrix& mat,
   }
 
   newcolmap = std::make_shared<Core::LinAlg::Map>(mat.col_map().NumGlobalElements(),
-      static_cast<int>(my_col_gids.size()), my_col_gids.data(), 0, mat.Comm());
+      static_cast<int>(my_col_gids.size()), my_col_gids.data(), 0,
+      Core::Communication::unpack_epetra_comm(mat.Comm()));
 }
 
-/*----------------------------------------------------------------------*
- *----------------------------------------------------------------------*/
-void Mortar::replace_column_and_domain_map(Core::LinAlg::SparseMatrix& mat,
-    const Core::LinAlg::Map& newdomainmap, std::shared_ptr<Core::LinAlg::Map>* const newcolmap_ptr)
-{
-  if (not mat.filled()) FOUR_C_THROW("Matrix must be filled!");
-
-  std::shared_ptr<Core::LinAlg::Map> newcolmap = nullptr;
-  if (newcolmap_ptr)
-  {
-    create_new_col_map(mat, newdomainmap, *newcolmap_ptr);
-    newcolmap = *newcolmap_ptr;
-  }
-  else
-    create_new_col_map(mat, newdomainmap, newcolmap);
-
-  int err = mat.epetra_matrix()->ReplaceColMap(newcolmap->get_epetra_map());
-  if (err) FOUR_C_THROW("ReplaceColMap failed! ( err = {} )", err);
-
-  Epetra_Import importer(newcolmap->get_epetra_map(), newdomainmap.get_epetra_map());
-
-  err = mat.epetra_matrix()->ReplaceDomainMapAndImporter(newdomainmap.get_epetra_map(), &importer);
-  if (err) FOUR_C_THROW("ReplaceDomainMapAndImporter failed! ( err = {} )", err);
-}
 
 /*----------------------------------------------------------------------*
  | transform the row and column maps of a matrix (GIDs)       popp 08/10|
@@ -463,10 +440,10 @@ int Mortar::sort_convex_hull_points(bool out, Core::LinAlg::SerialDenseMatrix& t
 
   // (2) Sort remaining points ascending w.r.t their angle with the y-axis
   // (if more than 1 point with identical angle exists, sort ascending w.r.t. their y-value)
-  std::vector<double> cotangle(0);
-  std::vector<double> yvalues(0);
-  std::vector<int> sorted(0);
-  std::vector<int> onxline(0);
+  std::vector<double> cotangle;
+  std::vector<double> yvalues;
+  std::vector<int> sorted;
+  std::vector<int> onxline;
 
   for (int i = 0; i < np; ++i)
   {
@@ -742,8 +719,8 @@ void Mortar::Utils::create_volume_ghosting(const Core::FE::Discretization& dis_s
     }
 
     // re-build element column map
-    Core::LinAlg::Map newelecolmap(-1, (int)rdata.size(), rdata.data(), 0,
-        Core::Communication::as_epetra_comm(voldis[disidx]->get_comm()));
+    Core::LinAlg::Map newelecolmap(
+        -1, (int)rdata.size(), rdata.data(), 0, voldis[disidx]->get_comm());
     rdata.clear();
 
     // redistribute the volume discretization according to the

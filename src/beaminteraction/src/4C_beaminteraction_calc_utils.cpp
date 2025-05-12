@@ -233,7 +233,7 @@ namespace BeamInteraction
       extend_ghosting_for_filament_bspot_setup(relevantfilaments, *discret);
 
       // get pointers to all filament number conditions set
-      std::vector<Core::Conditions::Condition*> filamentconditions(0);
+      std::vector<const Core::Conditions::Condition*> filamentconditions;
       discret->get_condition("BeamLineFilamentCondition", filamentconditions);
 
       // compute number of linker types
@@ -245,7 +245,7 @@ namespace BeamInteraction
         // loop over all nodes of current filament, sort elements and calculate total filament
         // length
         std::vector<int> const* nodeids = filamentconditions[filiter]->get_nodes();
-        std::vector<Core::Elements::Element*> sortedfilamenteles(0);
+        std::vector<Core::Elements::Element*> sortedfilamenteles;
         double filreflength = 0.0;
         compute_filament_length_and_sort_its_elements(
             sortedfilamenteles, nodeids, filreflength, *discret);
@@ -334,7 +334,7 @@ namespace BeamInteraction
       for (int iproc = 0; iproc < Core::Communication::num_mpi_ranks(discret.get_comm()); ++iproc)
       {
         // myrank == iproc: copy set to vector in order to broadcast data
-        std::vector<int> requirednodes(0);
+        std::vector<int> requirednodes;
         if (iproc == Core::Communication::my_mpi_rank(discret.get_comm()))
           requirednodes.insert(requirednodes.begin(), setofnodegidswithrequiredelecloud.begin(),
               setofnodegidswithrequiredelecloud.end());
@@ -373,8 +373,8 @@ namespace BeamInteraction
       std::vector<int> colgids(coleleset.begin(), coleleset.end());
 
       // create new ele col map
-      Core::LinAlg::Map newelecolmap(-1, static_cast<int>(colgids.size()), colgids.data(), 0,
-          Core::Communication::as_epetra_comm(discret.get_comm()));
+      Core::LinAlg::Map newelecolmap(
+          -1, static_cast<int>(colgids.size()), colgids.data(), 0, discret.get_comm());
 
       // temporarily extend ghosting
       Core::Binstrategy::Utils::extend_discretization_ghosting(
@@ -1250,8 +1250,8 @@ namespace BeamInteraction
       {
         std::vector<int> mapvec(eletypeset[i].begin(), eletypeset[i].end());
         eletypeset[i].clear();
-        maps[i] = std::make_shared<Core::LinAlg::Map>(-1, mapvec.size(), mapvec.data(), 0,
-            Core::Communication::as_epetra_comm(discret->get_comm()));
+        maps[i] = std::make_shared<Core::LinAlg::Map>(
+            -1, mapvec.size(), mapvec.data(), 0, discret->get_comm());
       }
 
       eletypeextractor->setup(*discret->element_row_map(), maps);

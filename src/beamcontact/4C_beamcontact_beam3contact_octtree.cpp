@@ -18,6 +18,7 @@
 #include "4C_global_data.hpp"
 #include "4C_io_value_parser.hpp"
 #include "4C_linalg_sparsematrix.hpp"
+#include "4C_linalg_transfer.hpp"
 #include "4C_linalg_utils_sparse_algebra_math.hpp"
 #include "4C_rigidsphere.hpp"
 
@@ -1015,10 +1016,8 @@ bool Beam3ContactOctTree::locate_all()
     std::vector<int> gids;
     for (int i = 0; i < bboxlengthglobal; i++) gids.push_back(i);
     // crosslinker column and row map
-    Core::LinAlg::Map octtreerowmap(
-        (int)gids.size(), 0, Core::Communication::as_epetra_comm(discret_.get_comm()));
-    Core::LinAlg::Map octtreemap(-1, (int)gids.size(), gids.data(), 0,
-        Core::Communication::as_epetra_comm(discret_.get_comm()));
+    Core::LinAlg::Map octtreerowmap((int)gids.size(), 0, discret_.get_comm());
+    Core::LinAlg::Map octtreemap(-1, (int)gids.size(), gids.data(), 0, discret_.get_comm());
 
     // build Core::LinAlg::MultiVector<double>s which hold the BBs of the OctreeMap; for
     // communication
@@ -1813,7 +1812,7 @@ void Beam3ContactOctTree::communicate_vector(Core::LinAlg::Vector<double>& InVec
 
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
   Epetra_Export exporter(OutVec.get_block_map(), InVec.get_block_map());
-  Epetra_Import importer(OutVec.get_block_map(), InVec.get_block_map());
+  Core::LinAlg::Import importer(OutVec.get_block_map(), InVec.get_block_map());
   if (doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
@@ -1821,7 +1820,7 @@ void Beam3ContactOctTree::communicate_vector(Core::LinAlg::Vector<double>& InVec
       OutVec.put_scalar(0.0);
     InVec.export_to(OutVec, exporter, Add);
   }
-  if (doimport) OutVec.import(InVec, importer, Insert);
+  if (doimport) OutVec.import(InVec, importer.get_epetra_import(), Insert);
   return;
 }
 
@@ -1833,14 +1832,14 @@ void Beam3ContactOctTree::communicate_multi_vector(Core::LinAlg::MultiVector<dou
 {
   // first, export the values of OutVec on Proc 0 to InVecs of all participating processors
   Epetra_Export exporter(OutVec.Map(), InVec.Map());
-  Epetra_Import importer(OutVec.Map(), InVec.Map());
+  Core::LinAlg::Import importer(OutVec.Map(), InVec.Map());
   if (doexport)
   {
     // zero out all vectors which are not Proc 0. Then, export Proc 0 data to InVec map.
     if (Core::Communication::my_mpi_rank(discret_.get_comm()) != 0 && zerofy) OutVec.PutScalar(0.0);
     InVec.Export(OutVec, exporter, Add);
   }
-  if (doimport) OutVec.Import(InVec, importer, Insert);
+  if (doimport) OutVec.Import(InVec, importer.get_epetra_import(), Insert);
   return;
 }
 

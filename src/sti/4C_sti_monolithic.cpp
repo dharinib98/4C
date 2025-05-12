@@ -557,22 +557,22 @@ void STI::Monolithic::output_matrix_to_file(
   std::copy(myglobalelements, myglobalelements + rowmap.NumMyElements(), myrowgids.data());
 
   // communicate global IDs
-  std::vector<int> rowgids(0, 0);
+  std::vector<int> rowgids;
   Core::LinAlg::allreduce_vector(myrowgids, rowgids, comm);
 
   // retain communicated global IDs only on processor with ID 0
   if (Core::Communication::my_mpi_rank(comm)) rowgids.clear();
 
   // create full row map on processor with ID 0
-  const Core::LinAlg::Map fullrowmap(-1, static_cast<int>(rowgids.size()),
-      rowgids.size() ? rowgids.data() : nullptr, 0, Core::Communication::as_epetra_comm(comm));
+  const Core::LinAlg::Map fullrowmap(
+      -1, static_cast<int>(rowgids.size()), rowgids.size() ? rowgids.data() : nullptr, 0, comm);
 
   // import matrix to processor with ID 0
   Core::LinAlg::SparseMatrix crsmatrix(fullrowmap, 0);
   if (sparsematrix != nullptr)
   {
     if (crsmatrix.import(*sparsematrix,
-            Epetra_Import(fullrowmap.get_epetra_map(), rowmap.get_epetra_map()), Insert))
+            Core::LinAlg::Import(fullrowmap.get_epetra_map(), rowmap.get_epetra_map()), Insert))
       FOUR_C_THROW("Matrix import failed!");
   }
   else
@@ -582,7 +582,7 @@ void STI::Monolithic::output_matrix_to_file(
       for (int j = 0; j < blocksparsematrix->cols(); ++j)
       {
         if (crsmatrix.import(blocksparsematrix->matrix(i, j),
-                Epetra_Import(
+                Core::LinAlg::Import(
                     fullrowmap.get_epetra_map(), blocksparsematrix->range_map(i).get_epetra_map()),
                 Insert))
           FOUR_C_THROW("Matrix import failed!");
@@ -668,15 +668,15 @@ void STI::Monolithic::output_vector_to_file(
   std::copy(myglobalelements, myglobalelements + map.NumMyElements(), mygids.data());
 
   // communicate global IDs
-  std::vector<int> gids(0, 0);
+  std::vector<int> gids;
   Core::LinAlg::allreduce_vector(mygids, gids, comm);
 
   // retain communicated global IDs only on processor with ID 0
   if (Core::Communication::my_mpi_rank(comm)) gids.clear();
 
   // create full vector map on processor with ID 0
-  const Core::LinAlg::Map fullmap(-1, static_cast<int>(gids.size()),
-      gids.size() ? gids.data() : nullptr, 0, Core::Communication::as_epetra_comm(comm));
+  const Core::LinAlg::Map fullmap(
+      -1, static_cast<int>(gids.size()), gids.size() ? gids.data() : nullptr, 0, comm);
 
   // export vector to processor with ID 0
   Core::LinAlg::MultiVector<double> fullvector(fullmap, vector.NumVectors(), true);
@@ -1640,7 +1640,7 @@ void STI::Monolithic::apply_dirichlet_off_diag(
     {
       case Inpar::S2I::coupling_matching_nodes:
       {
-        if (!thermo_field()->discretization()->get_condition("PointCoupling"))
+        if (!thermo_field()->discretization()->has_condition("PointCoupling"))
           thermoscatra_domain_interface->apply_dirichlet(*icoupthermo_->slave_dof_map(), false);
         break;
       }
@@ -1706,7 +1706,7 @@ void STI::Monolithic::assemble_domain_interface_off_diag(
 
   if (strategythermo_->coupling_type() == Inpar::S2I::coupling_matching_nodes)
   {  // standard meshtying algorithm with Lagrange multipliers condensed out
-    if (!thermo_field()->discretization()->get_condition("PointCoupling"))
+    if (!thermo_field()->discretization()->has_condition("PointCoupling"))
     {
       // during the very first run of the following code, Complete() has not yet been called
       // on the thermo-scatra block of the global system matrix experiments have shown that

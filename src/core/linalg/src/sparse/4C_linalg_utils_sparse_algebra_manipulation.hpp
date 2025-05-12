@@ -18,7 +18,6 @@
 
 #include <Epetra_CrsMatrix.h>
 #include <Epetra_Export.h>
-#include <Epetra_Import.h>
 
 #include <memory>
 
