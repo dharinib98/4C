@@ -250,8 +250,8 @@ void FSI::Utils::SlideAleUtils::remeshing(Adapter::FSIStructureWrapper& structur
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
-  Core::LinAlg::Import msimpo(dofrowmap->get_epetra_block_map(), structdofrowmap_->get_epetra_block_map());
-  Core::LinAlg::Import slimpo(dofrowmap->get_epetra_block_map(), fluiddofrowmap_->get_epetra_block_map());
+  Core::LinAlg::Import msimpo(*dofrowmap, *structdofrowmap_);
+  Core::LinAlg::Import slimpo(*dofrowmap, *fluiddofrowmap_);
 
   idispms_->import(*idisptotal, msimpo, Add);
   idispms_->import(iprojdispale, slimpo, Add);
@@ -271,10 +271,8 @@ void FSI::Utils::SlideAleUtils::evaluate_mortar(Core::LinAlg::Vector<double>& id
 
   std::shared_ptr<Core::LinAlg::Map> dofrowmap =
       Core::LinAlg::merge_map(*structdofrowmap_, *fluiddofrowmap_, true);
-  Core::LinAlg::Import master_importer(
-      dofrowmap->get_epetra_block_map(), structdofrowmap_->get_epetra_block_map());
-  Core::LinAlg::Import slave_importer(
-      dofrowmap->get_epetra_block_map(), fluiddofrowmap_->get_epetra_block_map());
+  Core::LinAlg::Import master_importer(*dofrowmap, *structdofrowmap_);
+  Core::LinAlg::Import slave_importer(*dofrowmap, *fluiddofrowmap_);
 
   if (idispms_->import(idispstruct, master_importer, Add)) FOUR_C_THROW("Import operation failed.");
   if (idispms_->import(idispfluid, slave_importer, Add)) FOUR_C_THROW("Import operation failed.");
@@ -447,8 +445,7 @@ void FSI::Utils::SlideAleUtils::slide_projection(
   std::shared_ptr<Core::LinAlg::Vector<double>> idispnp = structure.extract_interface_dispnp();
 
   // Redistribute displacement of structnodes on the interface to all processors.
-  Core::LinAlg::Import interimpo(
-      structfullnodemap_->get_epetra_block_map(), structdofrowmap_->get_epetra_block_map());
+  Core::LinAlg::Import interimpo(*structfullnodemap_, *structdofrowmap_);
   std::shared_ptr<Core::LinAlg::Vector<double>> reddisp =
       Core::LinAlg::create_vector(*structfullnodemap_, true);
   reddisp->import(*idispnp, interimpo, Add);

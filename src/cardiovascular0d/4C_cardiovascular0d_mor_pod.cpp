@@ -57,8 +57,7 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   }
 
   // build an importer
-  Core::LinAlg::Import dofrowimporter(full_model_dof_row_map_->get_epetra_block_map(),
-      reduced_basis->get_map().get_epetra_block_map());
+  Core::LinAlg::Import dofrowimporter(*full_model_dof_row_map_, reduced_basis->get_map());
   projmatrix_ = std::make_shared<Core::LinAlg::MultiVector<double>>(
       full_model_dof_row_map_->get_epetra_block_map(), reduced_basis->NumVectors(), true);
   int err = projmatrix_->Import(*reduced_basis, dofrowimporter, Insert, nullptr);
@@ -81,10 +80,8 @@ Cardiovascular0D::ProperOrthogonalDecomposition::ProperOrthogonalDecomposition(
   // wrong
 
   // importers for reduced system
-  structrimpo_ = std::make_shared<Core::LinAlg::Import>(
-      structmapr_->get_epetra_block_map(), redstructmapr_->get_epetra_block_map());
-  structrinvimpo_ = std::make_shared<Core::LinAlg::Import>(
-      redstructmapr_->get_epetra_block_map(), structmapr_->get_epetra_block_map());
+  structrimpo_ = std::make_shared<Core::LinAlg::Import>(*structmapr_, *redstructmapr_);
+  structrinvimpo_ = std::make_shared<Core::LinAlg::Import>(*redstructmapr_, *structmapr_);
 
   return;
 }
