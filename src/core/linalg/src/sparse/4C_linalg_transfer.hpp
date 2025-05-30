@@ -10,7 +10,8 @@
 
 #include "4C_config.hpp"
 
-#include <Epetra_Export.h>
+#include "4C_linalg_map.hpp"
+
 #include <Epetra_Import.h>
 
 FOUR_C_NAMESPACE_OPEN
