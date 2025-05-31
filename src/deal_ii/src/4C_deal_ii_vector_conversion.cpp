@@ -112,7 +112,7 @@ DealiiWrappers::VectorConverter<VectorType, dim, spacedim>::VectorConverter(
     const Core::FE::Discretization& discretization, const Context<dim, spacedim>& context)
     : dealii_to_four_c_map_(create_dealii_to_four_c_map(dof_handler, discretization, context)),
       dealii_to_four_c_importer_(
-          discretization.dof_row_map()->get_epetra_map(), dealii_to_four_c_map_.get_epetra_map()),
+          Core::LinAlg::Map{discretization.dof_row_map()->get_epetra_map()}, dealii_to_four_c_map_),
       vector_in_dealii_layout_(dealii_to_four_c_map_, false)
 {
 }
