@@ -175,9 +175,6 @@ void BeamInteraction::BeamToSolidMortarManager::setup()
       my_lambda_gid_rotational.size(), my_lambda_gid_rotational.data(), 0, discret_->get_comm());
   lambda_dof_rowmap_ =
       Core::LinAlg::merge_map(lambda_dof_rowmap_translations_, lambda_dof_rowmap_rotations_, false);
-
-  std::cout << "\nSet new lambda dof row map\n";
-
   // We need to be able to get the global ids for a Lagrange multiplier DOF from the global id
   // of a node or element. To do so, we 'abuse' the Core::LinAlg::MultiVector<double> as map between
   // the global node / element ids and the global Lagrange multiplier DOF ids.
@@ -480,7 +477,9 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
   // Add the penalty terms to the global force and stiffness matrix
   add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
 
-  global_lambda_container_ = data_state->get_lambda();
+  if (beam_to_solid_params_->get_constraint_enforcement() ==
+      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
+    global_lambda_container_ = data_state->get_lambda();
 }
 
 /**
@@ -597,8 +596,9 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
 {
   check_setup();
   check_global_maps();
-
-  return;
+  if (beam_to_solid_params_->get_constraint_enforcement() ==
+      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
+    return;
 
   // Get the penalty regularization
   const bool is_stiff = stiff != nullptr;
