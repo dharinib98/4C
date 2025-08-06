@@ -46,7 +46,7 @@ void BeamInteraction::BeamToSolidParamsBase::set_base_params(
         Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidConstraintEnforcement>(
             beam_to_solid_params_list, "CONSTRAINT_STRATEGY");
 
-    // Lagrange Formulation
+    //  Type of lagrange formulation used
     if (beam_to_solid_params_list.isParameter("LAGRANGE_FORMULATION"))
     {
       lagrange_formulation_ =

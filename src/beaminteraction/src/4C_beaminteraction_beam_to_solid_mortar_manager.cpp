@@ -28,7 +28,6 @@
 #include "4C_structure_new_timint_basedataglobalstate.hpp"
 #include "4C_utils_exceptions.hpp"
 
-
 FOUR_C_NAMESPACE_OPEN
 
 
@@ -683,7 +682,6 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
   // Add the force and stiffness contributions that are assembled directly by the pairs.
   Core::LinAlg::Vector<double> lambda_col(*lambda_dof_colmap_);
   Core::LinAlg::export_to(*lambda, lambda_col);
-
   for (const auto& elepairptr : contact_pairs_)
     elepairptr->evaluate_and_assemble(
         *discret_, this, force, stiff, lambda_col, *data_state->get_dis_col_np());
@@ -782,60 +780,9 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
     Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::Vector<double>& f,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
-  // // Lambda stuff?
-  // auto ll = Epetra_Vector(*lagrange_map_);
-  // ll.ReplaceGlobalValue(100, 0, 69.69);
-
-  // auto tmp = Epetra_Vector(f.Map());
-  // Core::LinAlg::export_to(ll, tmp);
-  // f.Update(1., tmp, 1.);
-
-
-  // {  // --- displ. - block ---------------------------------------------------
-  //    // block_vec_ptr = strategy().get_rhs_block_ptr(CONTACT::VecBlockType::displ);
-  //    // // if there are no active contact contributions, we can skip this...
-  //    // if (block_vec_ptr.is_null()) return true;
-
-  //   // Core::LinAlg::AssembleMyVector(1.0, f, timefac_np, *block_vec_ptr);
-  // }
-
-
-
-  // const auto maplambda = lambda_dof_rowmap_;
-  // Epetra_Vector meins(*maplambda, true);
-  // meins.ReplaceGlobalValue(103, 0, 69.69);
-
   auto tmp = Core::LinAlg::Vector<double>(f.get_map());
   Core::LinAlg::Vector<double> constraint = Core::LinAlg::Vector<double>(*constraint_);
   Core::LinAlg::export_to(constraint, tmp);
-
-
-
-  // // Add the forces
-  // // Factor for right hand side (forces). 1 corresponds to the mesh-tying forces being added to
-  // // the right hand side, -1 to the left hand side.
-  // const double rhs_factor = -1.0;
-
-  // // Multiply the lambda vector with FB_L and FS_L to get the forces on the beam and solid,
-  // // respectively.
-  // Teuchos::RCP<Epetra_Vector> beam_force = Teuchos::rcp(new Epetra_Vector(*beam_dof_rowmap_));
-  // Teuchos::RCP<Epetra_Vector> solid_force = Teuchos::rcp(new Epetra_Vector(*solid_dof_rowmap_));
-  // beam_force->PutScalar(0.);
-  // solid_force->PutScalar(0.);
-  // int linalg_error =
-  //     force_beam_lin_lambda_->multiply(false, *(data_state->get_lambda()), *beam_force);
-  // if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
-  // linalg_error =
-  //     force_solid_lin_lambda_->multiply(false, *(data_state->get_lambda()), *solid_force);
-  // if (linalg_error != 0) FOUR_C_THROW("Error in Multiply!");
-  // Teuchos::RCP<Epetra_Vector> global_temp = Teuchos::rcp(new Epetra_Vector(f.Map()));
-  // Core::LinAlg::export_to(*beam_force, *global_temp);
-  // Core::LinAlg::export_to(*solid_force, *global_temp);
-
-  // // Add force contributions to global vector.
-  // linalg_error = tmp.Update(-1.0 * rhs_factor, *global_temp, 1.0);
-  // if (linalg_error != 0) FOUR_C_THROW("Error in Update");
-
 
   f.update(1., tmp, 1.);
 }
@@ -860,15 +807,6 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
       std::make_shared<Core::LinAlg::SparseMatrix>(kappa_vector);
   kappa_penalty_inv_mat2->scale(-1.0 / penalty_translation);
   kappa_penalty_inv_mat2->complete();
-
-
-  // kappa_penalty_inv_mat2->set_value(1.0, 99, 99);
-  // kappa_penalty_inv_mat2->set_value(1.0, 100, 100);
-  // kappa_penalty_inv_mat2->set_value(1.0, 101, 101);
-  // kappa_penalty_inv_mat2->set_value(1.0, 102, 102);
-  // kappa_penalty_inv_mat2->set_value(1.0, 103, 103);
-  // kappa_penalty_inv_mat2->set_value(1.0, 104, 104);
-
 
   const auto lagrange_formulation = beam_to_solid_params_->get_lagrange_formulation();
   if (lagrange_formulation == Inpar::BeamToSolid::BeamToSolidLagrangeFormulation::regularized)
