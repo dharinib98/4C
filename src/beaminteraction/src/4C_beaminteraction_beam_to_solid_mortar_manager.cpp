@@ -499,24 +499,29 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
       std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::penalty)
+  switch (beam_to_solid_params_->get_constraint_enforcement())
   {
-    Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
-  }
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-  {
-    const auto lambda = get_global_lambda();
-    if (lambda == nullptr)
+    case Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::penalty:
     {
-      lambda_col->put_scalar(0.0);
+      Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
+      break;
     }
-    else
+    case Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange:
     {
-      Core::LinAlg::Vector<double> global_lambda_container =
-          Core::LinAlg::Vector<double>(*global_lambda_container_);
-      Core::LinAlg::export_to(global_lambda_container, *lambda_col);
+      const auto lambda = get_global_lambda();
+      if (lambda == nullptr)
+      {
+        lambda_col->put_scalar(0.0);
+      }
+      else
+      {
+        Core::LinAlg::export_to(*global_lambda_container_, *lambda_col);
+      }
+      break;
+    }
+    case Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::none:
+    {
+      break;
     }
   }
 
@@ -595,9 +600,6 @@ void BeamInteraction::BeamToSolidMortarManager::add_global_force_stiffness_penal
 {
   check_setup();
   check_global_maps();
-  if (beam_to_solid_params_->get_constraint_enforcement() ==
-      Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
-    return;
 
   // Get the penalty regularization
   const bool is_stiff = stiff != nullptr;
@@ -782,7 +784,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
 {
   auto tmp = Core::LinAlg::Vector<double>(f.get_map());
   Core::LinAlg::Vector<double> constraint = Core::LinAlg::Vector<double>(*constraint_);
-  Core::LinAlg::export_to(constraint, tmp);
+  Core::LinAlg::export_to(*constraint_, tmp);
 
   f.update(1., tmp, 1.);
 }
@@ -801,8 +803,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
   // Set penalty entry
   const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
   auto kappa_vector = Core::LinAlg::Vector<double>(block_lm_displ_row_map);
-  Core::LinAlg::Vector<double> kappa = Core::LinAlg::Vector<double>(*kappa_);
-  Core::LinAlg::export_to(kappa, kappa_vector);
+  Core::LinAlg::export_to(*kappa_, kappa_vector);
   std::shared_ptr<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat2 =
       std::make_shared<Core::LinAlg::SparseMatrix>(kappa_vector);
   kappa_penalty_inv_mat2->scale(-1.0 / penalty_translation);

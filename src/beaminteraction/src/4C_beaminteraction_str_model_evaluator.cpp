@@ -847,9 +847,7 @@ void Solid::ModelEvaluator::BeamInteraction::run_pre_compute_x(
   if (beam_to_solid_params_ptr_->get_constraint_enforcement() !=
       Inpar::BeamToSolid::BeamToSolidConstraintEnforcement::lagrange)
     return;
-  Core::LinAlg::Vector<double> lambda_vector =
-      Core::LinAlg::Vector<double>(*ia_state_ptr_->get_lambda());
-  Core::LinAlg::export_to(dir_mutable, lambda_vector);
+  Core::LinAlg::export_to(dir_mutable, *ia_state_ptr_->get_lambda());
 }
 
 /*----------------------------------------------------------------------------*
