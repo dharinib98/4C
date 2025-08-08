@@ -783,7 +783,6 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
   auto tmp = Core::LinAlg::Vector<double>(f.get_map());
-  Core::LinAlg::Vector<double> constraint = Core::LinAlg::Vector<double>(*constraint_);
   Core::LinAlg::export_to(*constraint_, tmp);
 
   f.update(1., tmp, 1.);
