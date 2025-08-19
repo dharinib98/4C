@@ -155,14 +155,14 @@ namespace BeamInteraction
     //! Penalty parameter.
     double penalty_parameter_;
 
-    // saddle point flag
-    bool saddle_point_;
-
     //! Gauss rule to be used.
     Core::FE::GaussRule1D gauss_rule_;
 
     //! Flag for rotational coupling
     bool rotational_coupling_;
+
+    // saddle point flag
+    bool saddle_point_;
   };
 
 }  // namespace BeamInteraction

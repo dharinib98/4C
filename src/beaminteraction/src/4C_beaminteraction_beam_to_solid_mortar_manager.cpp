@@ -484,6 +484,8 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_force_stiff_penalty_reg
 
   // Add the penalty terms to the global force and stiffness matrix
   add_global_force_stiffness_penalty_contributions(data_state, stiff, force);
+
+  global_lambda_ = data_state->get_lambda();
 }
 
 /**
@@ -504,7 +506,16 @@ BeamInteraction::BeamToSolidMortarManager::get_global_lambda_col() const
 {
   std::shared_ptr<Core::LinAlg::Vector<double>> lambda_col =
       std::make_shared<Core::LinAlg::Vector<double>>(*lambda_dof_colmap_);
-  Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
+  const auto lambda = get_global_lambda();
+  if (lambda == nullptr)
+  {
+    lambda_col->put_scalar(0.0);
+  }
+  else
+  {
+    Core::LinAlg::export_to(*global_lambda_, *lambda_col);
+  }
+  // Core::LinAlg::export_to(*get_global_lambda(), *lambda_col);
   return lambda_col;
 }
 
@@ -789,8 +800,7 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_force(
   // meins.ReplaceGlobalValue(103, 0, 69.69);
 
   auto tmp = Core::LinAlg::Vector<double>(f.Map());
-  Core::LinAlg::VectorView a_view_const(*constraint_);
-  Core::LinAlg::export_to(a_view_const, tmp);
+  Core::LinAlg::export_to(*constraint_, tmp);
 
 
 
@@ -827,49 +837,50 @@ void BeamInteraction::BeamToSolidMortarManager::assemble_stiff(
     Solid::TimeInt::BaseDataGlobalState& gstate, Core::LinAlg::SparseOperator& jac,
     const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state) const
 {
-  // Set penalty entry
-  const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
-  auto kappa_vector = Core::LinAlg::Vector<double>(*lambda_dof_rowmap_);
-  Core::LinAlg::VectorView a_view_const(*kappa_);
-  Core::LinAlg::export_to(a_view_const, kappa_vector);
-  Teuchos::RCP<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat2 =
-      Teuchos::rcp(new Core::LinAlg::SparseMatrix(kappa_vector));
-  kappa_penalty_inv_mat2->scale(-1.0 / penalty_translation);
-  kappa_penalty_inv_mat2->complete();
-
-
-  // kappa_penalty_inv_mat2->set_value(1.0, 99, 99);
-  // kappa_penalty_inv_mat2->set_value(1.0, 100, 100);
-  // kappa_penalty_inv_mat2->set_value(1.0, 101, 101);
-  // kappa_penalty_inv_mat2->set_value(1.0, 102, 102);
-  // kappa_penalty_inv_mat2->set_value(1.0, 103, 103);
-  // kappa_penalty_inv_mat2->set_value(1.0, 104, 104);
-
+  std::shared_ptr<const Core::LinAlg::SparseOperator> jac_ptr(
+      &jac, [](Core::LinAlg::SparseOperator*) {});
+  std::shared_ptr<const Core::LinAlg::BlockSparseMatrixBase> jac_block_sparse_matrix_base =
+      Core::LinAlg::cast_to_const_block_sparse_matrix_base_and_check_success(jac_ptr);
+  auto block_lm_displ_row_map = jac_block_sparse_matrix_base->matrix(1, 0).row_map();
+  auto block_displ_lm_row_map = jac_block_sparse_matrix_base->matrix(0, 1).row_map();
 
   const bool saddle_point_bool = beam_to_solid_params_->get_saddle_point_formulation_flag();
   if (!saddle_point_bool)
   {
-    gstate.assign_model_block(jac, *kappa_penalty_inv_mat2, Inpar::Solid::model_beaminteraction,
+    // Set penalty entry
+    const double penalty_translation = beam_to_solid_params_->get_penalty_parameter();
+    auto kappa_vector = Core::LinAlg::Vector<double>(block_lm_displ_row_map);
+    Core::LinAlg::export_to(*kappa_, kappa_vector);
+    std::shared_ptr<Core::LinAlg::SparseMatrix> kappa_penalty_inv_mat =
+        std::make_shared<Core::LinAlg::SparseMatrix>(kappa_vector);
+    kappa_penalty_inv_mat->scale(-1.0 / penalty_translation);
+    kappa_penalty_inv_mat->complete();
+    gstate.assign_model_block(jac, *kappa_penalty_inv_mat, Inpar::Solid::model_beaminteraction,
         Solid::MatBlockType::lm_lm);
   }
 
-
   Core::LinAlg::SparseMatrix lm_displ =
       Core::LinAlg::SparseMatrix(*lambda_dof_rowmap_, 81, true, true);
-  lm_displ.add(*constraint_lin_beam_, false, 1.0, 1.0);
+  lm_displ.add(*constraint_lin_beam_, false, 1.0, 0.0);
   lm_displ.add(*constraint_lin_solid_, false, 1.0, 1.0);
   lm_displ.complete(*discret_->dof_row_map(), *lambda_dof_rowmap_);
-  gstate.assign_model_block(
-      jac, lm_displ, Inpar::Solid::model_beaminteraction, Solid::MatBlockType::lm_displ);
 
+  std::shared_ptr<Core::LinAlg::SparseMatrix> lm_displ_in_global_layout =
+      Core::LinAlg::matrix_row_col_transform(
+          lm_displ, block_lm_displ_row_map, jac_block_sparse_matrix_base->domain_map(0));
+  gstate.assign_model_block(jac, *lm_displ_in_global_layout, Inpar::Solid::model_beaminteraction,
+      Solid::MatBlockType::lm_displ);
 
   Core::LinAlg::SparseMatrix displ_lm =
       Core::LinAlg::SparseMatrix(*discret_->dof_row_map(), 81, true, true);
-  displ_lm.add(*force_beam_lin_lambda_, false, 1.0, 1.0);
+  displ_lm.add(*force_beam_lin_lambda_, false, 1.0, 0.0);
   displ_lm.add(*force_solid_lin_lambda_, false, 1.0, 1.0);
   displ_lm.complete(*lambda_dof_rowmap_, *discret_->dof_row_map());
-  gstate.assign_model_block(
-      jac, displ_lm, Inpar::Solid::model_beaminteraction, Solid::MatBlockType::displ_lm);
+  std::shared_ptr<Core::LinAlg::SparseMatrix> displ_lm_in_global_layout =
+      Core::LinAlg::matrix_row_col_transform(
+          displ_lm, block_displ_lm_row_map, jac_block_sparse_matrix_base->domain_map(1));
+  gstate.assign_model_block(jac, *displ_lm_in_global_layout, Inpar::Solid::model_beaminteraction,
+      Solid::MatBlockType::displ_lm);
 }
 
 
