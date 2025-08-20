@@ -187,7 +187,8 @@ namespace BeamInteraction
      */
     double get_energy() const;
 
-    void assemble_force(Solid::TimeInt::BaseDataGlobalState& gstate, Epetra_Vector& f,
+    void assemble_force(Solid::TimeInt::BaseDataGlobalState& gstate,
+        Core::LinAlg::Vector<double>& f,
         const std::shared_ptr<const Solid::ModelEvaluator::BeamInteractionDataState>& data_state)
         const;
 
