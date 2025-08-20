@@ -27,7 +27,7 @@ BeamInteraction::BeamToSolidParamsBase::BeamToSolidParamsBase()
       penalty_parameter_(-1.0),
       gauss_rule_(Core::FE::GaussRule1D::undefined),
       rotational_coupling_(false),
-      saddle_point_(false)
+      lagrange_formulation_(Inpar::BeamToSolid::BeamToSolidLagrangeFormulation::none)
 {
   // Empty Constructor.
 }
@@ -46,8 +46,13 @@ void BeamInteraction::BeamToSolidParamsBase::set_base_params(
         Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidConstraintEnforcement>(
             beam_to_solid_params_list, "CONSTRAINT_STRATEGY");
 
-    // Saddle point formulation flag
-    saddle_point_ = beam_to_solid_params_list.get<bool>("SADDLE_POINT_FORMULATION");
+    //  Type of lagrange formulation used
+    if (beam_to_solid_params_list.isParameter("LAGRANGE_FORMULATION"))
+    {
+      lagrange_formulation_ =
+          Teuchos::getIntegralValue<Inpar::BeamToSolid::BeamToSolidLagrangeFormulation>(
+              beam_to_solid_params_list, "LAGRANGE_FORMULATION");
+    }
 
     // Contact discretization to be used.
     contact_discretization_ =

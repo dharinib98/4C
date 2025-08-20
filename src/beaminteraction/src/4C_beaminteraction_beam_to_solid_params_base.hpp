@@ -96,9 +96,12 @@ namespace BeamInteraction
     }
 
     /**
-     * \brief Returns saddle point formulation flag.
+     * \brief Returns the type of lagrange formulation used.
      */
-    inline bool get_saddle_point_formulation_flag() const { return saddle_point_; }
+    inline Inpar::BeamToSolid::BeamToSolidLagrangeFormulation get_lagrange_formulation() const
+    {
+      return lagrange_formulation_;
+    }
 
     /**
      * \brief Returns the shape function for the mortar Lagrange-multiplicators.
@@ -161,8 +164,8 @@ namespace BeamInteraction
     //! Flag for rotational coupling
     bool rotational_coupling_;
 
-    // saddle point flag
-    bool saddle_point_;
+    //! Type of lagrange formulation
+    Inpar::BeamToSolid::BeamToSolidLagrangeFormulation lagrange_formulation_;
   };
 
 }  // namespace BeamInteraction
