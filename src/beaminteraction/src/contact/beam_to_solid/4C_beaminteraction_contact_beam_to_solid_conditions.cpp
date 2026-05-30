@@ -13,6 +13,7 @@
 #include "4C_beaminteraction_contact_beam_to_solid_input.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_mortar_manager.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_mortar_manager_contact.hpp"
+#include "4C_beaminteraction_contact_beam_to_solid_mortar_shape_functions_dual_hermite.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_surface_meshtying_pair_gauss_point.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_surface_meshtying_pair_gauss_point_FAD.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_surface_meshtying_pair_mortar.hpp"
@@ -362,7 +363,7 @@ BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
           GeometryPair::t_line4>(shape, other_mortar_shape_function...);
     case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
       return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
-          GeometryPair::t_hermite_dual>(shape, other_mortar_shape_function...);
+          BeamInteraction::t_hermite_dual>(shape, other_mortar_shape_function...);
     default:
       FOUR_C_THROW("Wrong mortar shape function.");
       return nullptr;
@@ -413,7 +414,7 @@ BeamInteraction::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
     }
     else
     {
-      // Create the rotational mortart pairs.
+      // Create the rotational mortar pairs.
       return create_beam_to_solid_volume_pair_mortar<BeamToSolidVolumeMeshtyingPairMortarRotation>(
           shape, mortar_shape_function, mortar_shape_function_rotation);
     }

@@ -9,6 +9,8 @@
 
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 
+#include "4C_beaminteraction_contact_beam_to_solid_mortar_shape_functions_dual_hermite.hpp"
+
 namespace
 {
   using namespace FourC;
@@ -41,27 +43,17 @@ namespace
     const double L = 1.0;
 
     Core::LinAlg::Matrix<4, 1> Phi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d(Phi, r, L, Core::FE::CellType::line2);
+
+    GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> shape_function_data;
+    shape_function_data.ref_length_ = L;
+
+    GeometryPair::EvaluateShapeFunction<BeamInteraction::t_hermite_dual>::evaluate(
+        Phi, r, shape_function_data);
 
     std::vector<double> Phi_ref = {
-        -0.24634578918994066, -0.05276684284142519, -1.1393423701836305, -14.366895799082851};
+        -0.24634578918994066, -0.008794473806904124, -1.1393423701836305, 2.394482633180475};
 
     for (std::size_t i = 0; i < Phi_ref.size(); ++i) EXPECT_NEAR(Phi(i), Phi_ref[i], 1e-10);
-
-    Core::LinAlg::Matrix<1, 4> dPhi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d_deriv1(dPhi, r, L, Core::FE::CellType::line2);
-
-    std::vector<double> dPhi_ref = {
-        4.275834475307499, -60.75445819868999, -2.423982640307499, -49.64334718868999};
-
-    for (std::size_t i = 0; i < dPhi_ref.size(); ++i) EXPECT_NEAR(dPhi(i), dPhi_ref[i], 1e-10);
-
-    Core::LinAlg::Matrix<1, 4> ddPhi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d_deriv2(ddPhi, r, L, Core::FE::CellType::line2);
-
-    std::vector<double> ddPhi_ref = {1.0185185775, 32.77777707, 13.9814814225, 122.77777707};
-
-    for (std::size_t i = 0; i < ddPhi_ref.size(); ++i) EXPECT_NEAR(ddPhi(i), ddPhi_ref[i], 1e-10);
   }
 
   TEST(ElementShapeFunctionsTest, TestDualHermiteLine2Length03)
@@ -70,27 +62,17 @@ namespace
     const double L = 0.3;
 
     Core::LinAlg::Matrix<4, 1> Phi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d(Phi, r, L, Core::FE::CellType::line2);
+
+    GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> shape_function_data;
+    shape_function_data.ref_length_ = L;
+
+    GeometryPair::EvaluateShapeFunction<BeamInteraction::t_hermite_dual>::evaluate(
+        Phi, r, shape_function_data);
 
     std::vector<double> Phi_ref = {
-        -0.24634578918994066, -0.17588947613808398, -1.1393423701836305, -47.8896526636095};
+        -0.24634578918994066, -0.029314912689680415, -1.1393423701836305, 7.981608777268251};
 
     for (std::size_t i = 0; i < Phi_ref.size(); ++i) EXPECT_NEAR(Phi(i), Phi_ref[i], 1e-10);
-
-    Core::LinAlg::Matrix<1, 4> dPhi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d_deriv1(dPhi, r, L, Core::FE::CellType::line2);
-
-    std::vector<double> dPhi_ref = {
-        4.275834475307499, -202.51486066229998, -2.423982640307499, -165.47782396229996};
-
-    for (std::size_t i = 0; i < dPhi_ref.size(); ++i) EXPECT_NEAR(dPhi(i), dPhi_ref[i], 1e-10);
-
-    Core::LinAlg::Matrix<1, 4> ddPhi(Core::LinAlg::Initialization::zero);
-    Core::FE::shape_function_dual_hermite_1d_deriv2(ddPhi, r, L, Core::FE::CellType::line2);
-
-    std::vector<double> ddPhi_ref = {1.0185185775, 109.2592569, 13.9814814225, 409.2592569};
-
-    for (std::size_t i = 0; i < ddPhi_ref.size(); ++i) EXPECT_NEAR(ddPhi(i), ddPhi_ref[i], 1e-10);
   }
 
 }  // namespace

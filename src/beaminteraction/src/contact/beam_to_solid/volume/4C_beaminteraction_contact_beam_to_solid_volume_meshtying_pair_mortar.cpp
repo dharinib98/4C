@@ -8,6 +8,7 @@
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_pair_mortar.hpp"
 
 #include "4C_beaminteraction_contact_beam_to_solid_mortar_manager.hpp"
+#include "4C_beaminteraction_contact_beam_to_solid_mortar_shape_functions_dual_hermite.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_utils.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_visualization_output_writer_base.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_visualization_output_writer_visualization.hpp"
@@ -114,11 +115,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     // Setup variables.
     GeometryPair::ElementData<Mortar, double> element_data_lambda;
 
-    if constexpr (std::is_same_v<Mortar, GeometryPair::t_hermite_dual>)
-    {
-      element_data_lambda.shape_function_data_.ref_length_ =
-          this->ele1pos_.shape_function_data_.ref_length_;
-    }
+    BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
+        element_data_lambda, this->ele1pos_);
 
     Core::LinAlg::Matrix<3, 1, scalar_type> X;
     Core::LinAlg::Matrix<3, 1, scalar_type> r;
@@ -337,19 +335,12 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
       N_mortar.clear();
       N_beam.clear();
       N_solid.clear();
-      if constexpr (std::is_same_v<Mortar, GeometryPair::t_hermite_dual>)
-      {
-        GeometryPair::ShapeFunctionData<GeometryPair::t_hermite_dual> mortar_shape_function_data;
-        mortar_shape_function_data.ref_length_ = this->ele1pos_.shape_function_data_.ref_length_;
+      GeometryPair::ElementData<Mortar, double> mortar_element_data;
+      BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
+          mortar_element_data, this->ele1pos_);
 
-        GeometryPair::EvaluateShapeFunction<GeometryPair::t_hermite_dual>::evaluate(
-            N_mortar, projected_gauss_point.get_eta(), mortar_shape_function_data);
-      }
-      else
-      {
-        GeometryPair::EvaluateShapeFunction<Mortar>::evaluate(
-            N_mortar, projected_gauss_point.get_eta());
-      }
+      BeamInteraction::evaluate_beam_to_solid_mortar_shape_function(
+          N_mortar, projected_gauss_point.get_eta(), mortar_element_data);
       GeometryPair::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
       GeometryPair::EvaluateShapeFunction<Solid>::evaluate(

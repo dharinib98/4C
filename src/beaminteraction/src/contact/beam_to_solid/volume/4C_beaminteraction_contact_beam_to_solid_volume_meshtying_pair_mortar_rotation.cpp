@@ -11,6 +11,7 @@
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_mortar_manager.hpp"
+#include "4C_beaminteraction_contact_beam_to_solid_mortar_shape_functions_dual_hermite.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_utils.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_params.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
@@ -259,7 +260,7 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
       Core::LinAlg::inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GeometryPair::ShapeFunctionData<GeometryPair::t_hermite_dual> mortar_shape_function_data;
+      GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> mortar_shape_function_data;
       mortar_shape_function_data.ref_length_ = this->ele1pos_.shape_function_data_.ref_length_;
       GeometryPair::EvaluateShapeFunction<MortarRot>::evaluate(
           lambda_shape_functions, projected_gauss_point.get_eta(), mortar_shape_function_data);
@@ -555,10 +556,12 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
       Core::LinAlg::inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GeometryPair::ShapeFunctionData<GeometryPair::t_hermite_dual> mortar_shape_function_data;
-      mortar_shape_function_data.ref_length_ = this->ele1pos_.shape_function_data_.ref_length_;
-      GeometryPair::EvaluateShapeFunction<MortarRot>::evaluate(
-          lambda_shape_functions, projected_gauss_point.get_eta(), mortar_shape_function_data);
+      GeometryPair::ElementData<MortarRot, double> mortar_rot_element_data;
+      BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
+          mortar_rot_element_data, this->ele1pos_);
+
+      BeamInteraction::evaluate_beam_to_solid_mortar_shape_function(
+          lambda_shape_functions, projected_gauss_point.get_eta(), mortar_rot_element_data);
       for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
