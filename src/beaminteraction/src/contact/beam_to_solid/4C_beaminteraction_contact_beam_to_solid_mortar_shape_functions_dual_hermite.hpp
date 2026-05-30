@@ -39,30 +39,8 @@ namespace GeometryPair
     static void evaluate(V& N, const T& xi,
         const ShapeFunctionData<BeamInteraction::t_hermite_dual>& shape_function_data)
     {
-      switch (BeamInteraction::t_hermite_dual::discretization_)
-      {
-        case Core::FE::CellType::line2:
-        {
-          const T xi2 = xi * xi;
-          const T xi3 = xi2 * xi;
-
-          N(0) = -35.0 / 4.0 * xi3 + 15.0 / 4.0 * xi2 + 15.0 / 4.0 * xi - 3.0 / 4.0;
-
-          N(1) = (35.0 / 2.0 * xi3 - 15.0 / 4.0 * xi2 - 10.0 * xi + 5.0 / 4.0) /
-                 (shape_function_data.ref_length_);
-
-          N(2) = 35.0 / 4.0 * xi3 + 15.0 / 4.0 * xi2 - 15.0 / 4.0 * xi - 3.0 / 4.0;
-
-          N(3) = (-35.0 / 2.0 * xi3 - 15.0 / 4.0 * xi2 + 10.0 * xi + 5.0 / 4.0) /
-                 (shape_function_data.ref_length_);
-          break;
-        }
-        default:
-          FOUR_C_THROW("distype unknown\n");
-          break;
-      }
-
-      return;
+      Core::FE::shape_function_dual_hermite_1d(
+          N, xi, shape_function_data.ref_length_, t_hermite::discretization_);
     }
   };
 
