@@ -3025,43 +3025,6 @@ namespace Core::FE
   }
 
   /*!
-  \brief Fill a matrix of type VectorType with 1D dual hermite shape functions
-  */
-  template <class VectorType, typename NumberType1, typename NumberType2>
-  void shape_function_dual_hermite_1d(
-      VectorType& funct,                 ///< to be filled with dual shape function values
-      const NumberType1& xi,             ///< xi coordinate
-      const NumberType2& L,              ///< length of element
-      const Core::FE::CellType& distype  ///< distinguish between DiscretizationType
-  )
-  {
-    static_assert(!std::is_integral_v<NumberType1>);
-
-    switch (distype)
-    {
-      case Core::FE::CellType::line2:
-      {
-        const NumberType1 xi2 = xi * xi;
-        const NumberType1 xi3 = xi2 * xi;
-
-        funct(0) = -35.0 / 4.0 * xi3 + 15.0 / 4.0 * xi2 + 15.0 / 4.0 * xi - 3.0 / 4.0;
-
-        funct(1) = (105.0 * xi3 - 45.0 / 2.0 * xi2 - 60.0 * xi + 15.0 / 2.0) / L;
-
-        funct(2) = 35.0 / 4.0 * xi3 + 15.0 / 4.0 * xi2 - 15.0 / 4.0 * xi - 3.0 / 4.0;
-
-        funct(3) = (105.0 * xi3 + 45.0 / 2.0 * xi2 - 60.0 * xi - 15.0 / 2.0) / L;
-        break;
-      }
-      default:
-        FOUR_C_THROW("distype unknown\n");
-        break;
-    }
-
-    return;
-  }
-
-  /*!
    \brief Fill a matrix of type VectorType with 1D hermite shape functions of order five
    */
   template <class VectorType, typename NumberType1, typename NumberType2>

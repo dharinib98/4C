@@ -115,9 +115,6 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
     // Setup variables.
     GeometryPair::ElementData<Mortar, double> element_data_lambda;
 
-    BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
-        element_data_lambda, this->ele1pos_);
-
     Core::LinAlg::Matrix<3, 1, scalar_type> X;
     Core::LinAlg::Matrix<3, 1, scalar_type> r;
     Core::LinAlg::Matrix<3, 1, scalar_type> u;
@@ -335,12 +332,10 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
       N_mortar.clear();
       N_beam.clear();
       N_solid.clear();
-      GeometryPair::ElementData<Mortar, double> mortar_element_data;
-      BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
-          mortar_element_data, this->ele1pos_);
-
-      BeamInteraction::evaluate_beam_to_solid_mortar_shape_function(
-          N_mortar, projected_gauss_point.get_eta(), mortar_element_data);
+      GeometryPair::ShapeFunctionData<Mortar> shape_function_data;
+      GeometryPair::SetShapeFunctionData<Mortar>::set(shape_function_data, this->element1());
+      GeometryPair::EvaluateShapeFunction<Mortar>::evaluate(
+          N_mortar, projected_gauss_point.get_eta(), shape_function_data);
       GeometryPair::EvaluateShapeFunction<Beam>::evaluate(
           N_beam, projected_gauss_point.get_eta(), this->ele1pos_.shape_function_data_);
       GeometryPair::EvaluateShapeFunction<Solid>::evaluate(

@@ -185,7 +185,10 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
   Core::LinAlg::Matrix<3, 3, double> T_solid_inv;
   Core::LinAlg::Matrix<3, 3, double> T_rel;
 
-  Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  // Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  static constexpr unsigned int n_lambda_shape_functions = MortarRot::n_dof_ / 3;
+
+  Core::LinAlg::Matrix<n_lambda_shape_functions, 1, double> lambda_shape_functions;
   Core::LinAlg::Matrix<3, MortarRot::n_dof_, double> lambda_shape_functions_full(
       Core::LinAlg::Initialization::zero);
   Core::LinAlg::SerialDenseVector L_i(3);
@@ -472,7 +475,10 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_solid_inv;
   Core::LinAlg::Matrix<3, 3, scalar_type_rot_1st> T_rel;
 
-  Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  // Core::LinAlg::Matrix<MortarRot::n_nodes_, 1, double> lambda_shape_functions;
+  static constexpr unsigned int n_lambda_shape_functions = MortarRot::n_dof_ / 3;
+
+  Core::LinAlg::Matrix<n_lambda_shape_functions, 1, double> lambda_shape_functions;
   Core::LinAlg::Matrix<3, MortarRot::n_dof_, scalar_type_rot_1st> lambda_shape_functions_full(
       Core::LinAlg::Initialization::zero);
   Core::LinAlg::SerialDenseVector L_i(3);
@@ -556,12 +562,10 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
       Core::LinAlg::inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GeometryPair::ElementData<MortarRot, double> mortar_rot_element_data;
-      BeamInteraction::set_beam_to_solid_mortar_shape_function_data(
-          mortar_rot_element_data, this->ele1pos_);
-
-      BeamInteraction::evaluate_beam_to_solid_mortar_shape_function(
-          lambda_shape_functions, projected_gauss_point.get_eta(), mortar_rot_element_data);
+      GeometryPair::ShapeFunctionData<MortarRot> shape_function_data;
+      GeometryPair::SetShapeFunctionData<MortarRot>::set(shape_function_data, this->element1());
+      GeometryPair::EvaluateShapeFunction<MortarRot>::evaluate(
+          lambda_shape_functions, projected_gauss_point.get_eta(), shape_function_data);
       for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
