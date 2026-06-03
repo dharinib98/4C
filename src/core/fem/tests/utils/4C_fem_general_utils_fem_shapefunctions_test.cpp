@@ -44,10 +44,10 @@ namespace
 
     Core::LinAlg::Matrix<4, 1> Phi(Core::LinAlg::Initialization::zero);
 
-    GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> shape_function_data;
+    GeometryPair::ShapeFunctionData<BeamInteraction::HermiteDual> shape_function_data;
     shape_function_data.ref_length_ = L;
 
-    GeometryPair::EvaluateShapeFunction<BeamInteraction::t_hermite_dual>::evaluate(
+    GeometryPair::EvaluateShapeFunction<BeamInteraction::HermiteDual>::evaluate(
         Phi, r, shape_function_data);
 
     std::vector<double> Phi_ref = {
@@ -63,10 +63,10 @@ namespace
 
     Core::LinAlg::Matrix<4, 1> Phi(Core::LinAlg::Initialization::zero);
 
-    GeometryPair::ShapeFunctionData<BeamInteraction::t_hermite_dual> shape_function_data;
+    GeometryPair::ShapeFunctionData<BeamInteraction::HermiteDual> shape_function_data;
     shape_function_data.ref_length_ = L;
 
-    GeometryPair::EvaluateShapeFunction<BeamInteraction::t_hermite_dual>::evaluate(
+    GeometryPair::EvaluateShapeFunction<BeamInteraction::HermiteDual>::evaluate(
         Phi, r, shape_function_data);
 
     std::vector<double> Phi_ref = {

@@ -18,8 +18,7 @@ FOUR_C_NAMESPACE_OPEN
 
 namespace BeamInteraction
 {
-  struct t_hermite_dual
-      : public GeometryPair::ElementDiscretizationBase<Core::FE::CellType::line2, 2>
+  struct HermiteDual : public GeometryPair::ElementDiscretizationBase<Core::FE::CellType::line2, 2>
   {
   };
 }  // namespace BeamInteraction
@@ -27,17 +26,17 @@ namespace BeamInteraction
 namespace GeometryPair
 {
   template <>
-  struct ShapeFunctionData<BeamInteraction::t_hermite_dual>
+  struct ShapeFunctionData<BeamInteraction::HermiteDual>
   {
     double ref_length_;
   };
 
   template <>
-  struct EvaluateShapeFunction<BeamInteraction::t_hermite_dual>
+  struct EvaluateShapeFunction<BeamInteraction::HermiteDual>
   {
     template <typename V, typename T>
     static void evaluate(V& N, const T& xi,
-        const ShapeFunctionData<BeamInteraction::t_hermite_dual>& shape_function_data)
+        const ShapeFunctionData<BeamInteraction::HermiteDual>& shape_function_data)
     {
       static_assert(!std::is_integral_v<T>);
 
@@ -69,10 +68,10 @@ namespace GeometryPair
   };
 
   template <>
-  struct PrintElementData<BeamInteraction::t_hermite_dual>
+  struct PrintElementData<BeamInteraction::HermiteDual>
   {
     template <typename ScalarType>
-    static void print(const ElementData<BeamInteraction::t_hermite_dual, ScalarType>& element_data,
+    static void print(const ElementData<BeamInteraction::HermiteDual, ScalarType>& element_data,
         std::ostream& out)
     {
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
