@@ -114,7 +114,6 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid,
   {
     // Setup variables.
     GeometryPair::ElementData<Mortar, double> element_data_lambda;
-
     Core::LinAlg::Matrix<3, 1, scalar_type> X;
     Core::LinAlg::Matrix<3, 1, scalar_type> r;
     Core::LinAlg::Matrix<3, 1, scalar_type> u;

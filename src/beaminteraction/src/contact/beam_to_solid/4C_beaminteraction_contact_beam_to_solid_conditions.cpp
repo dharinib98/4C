@@ -340,6 +340,13 @@ BeamInteraction::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE:
   }
 }
 
+template <template <typename...> class T>
+inline constexpr bool is_rotation_pair_v = false;
+
+template <>
+inline constexpr bool
+    is_rotation_pair_v<BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation> = true;
+
 /**
  *
  */
@@ -362,8 +369,18 @@ BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
       return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
           GeometryPair::t_line4>(shape, other_mortar_shape_function...);
     case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
-      return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
-          BeamInteraction::HermiteDual>(shape, other_mortar_shape_function...);
+    {
+      if constexpr (!is_rotation_pair_v<BtsClass>)
+      {
+        return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
+            BeamInteraction::HermiteDual>(shape, other_mortar_shape_function...);
+      }
+
+      FOUR_C_THROW(
+          "Dual Hermite mortar shape functions are currently not implemented for rotational "
+          "beam-to-solid volume meshtying.");
+      return nullptr;
+    }
     default:
       FOUR_C_THROW("Wrong mortar shape function.");
       return nullptr;
@@ -378,37 +395,6 @@ std::shared_ptr<BeamInteraction::BeamContactPair>
 BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellType shape)
 {
   return create_beam_to_solid_volume_pair_shape<BtsClass, BtsMortarTemplateArguments...>(shape);
-}
-
-template <template <typename...> class BtsClass, typename PosMortar>
-std::shared_ptr<BeamInteraction::BeamContactPair> create_beam_to_solid_volume_pair_mortar_rotation(
-    const Core::FE::CellType shape,
-    const BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function_rotation)
-{
-  switch (mortar_shape_function_rotation)
-  {
-    case BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-      return BeamInteraction::create_beam_to_solid_volume_pair_shape<BtsClass, PosMortar,
-          GeometryPair::t_line2>(shape);
-
-    case BeamToSolid::BeamToSolidMortarShapefunctions::line3:
-      return BeamInteraction::create_beam_to_solid_volume_pair_shape<BtsClass, PosMortar,
-          GeometryPair::t_line3>(shape);
-
-    case BeamToSolid::BeamToSolidMortarShapefunctions::line4:
-      return BeamInteraction::create_beam_to_solid_volume_pair_shape<BtsClass, PosMortar,
-          GeometryPair::t_line4>(shape);
-
-    case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
-      FOUR_C_THROW(
-          "Dual Hermite mortar shape functions are currently not implemented for rotational "
-          "beam-to-solid volume meshtying.");
-
-    default:
-      FOUR_C_THROW("Wrong rotational mortar shape function.");
-  }
-
-  return nullptr;
 }
 
 /**
@@ -446,31 +432,8 @@ BeamInteraction::BeamToSolidConditionVolumeMeshtying::create_contact_pair_intern
     else
     {
       // Create the rotational mortar pairs.
-      switch (mortar_shape_function)
-      {
-        case BeamToSolid::BeamToSolidMortarShapefunctions::line2:
-          return create_beam_to_solid_volume_pair_mortar_rotation<
-              BeamToSolidVolumeMeshtyingPairMortarRotation, GeometryPair::t_line2>(
-              shape, mortar_shape_function_rotation);
-
-        case BeamToSolid::BeamToSolidMortarShapefunctions::line3:
-          return create_beam_to_solid_volume_pair_mortar_rotation<
-              BeamToSolidVolumeMeshtyingPairMortarRotation, GeometryPair::t_line3>(
-              shape, mortar_shape_function_rotation);
-
-        case BeamToSolid::BeamToSolidMortarShapefunctions::line4:
-          return create_beam_to_solid_volume_pair_mortar_rotation<
-              BeamToSolidVolumeMeshtyingPairMortarRotation, GeometryPair::t_line4>(
-              shape, mortar_shape_function_rotation);
-
-        case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
-          return create_beam_to_solid_volume_pair_mortar_rotation<
-              BeamToSolidVolumeMeshtyingPairMortarRotation, BeamInteraction::HermiteDual>(
-              shape, mortar_shape_function_rotation);
-
-        default:
-          FOUR_C_THROW("Wrong positional mortar shape function.");
-      }
+      return create_beam_to_solid_volume_pair_mortar<BeamToSolidVolumeMeshtyingPairMortarRotation>(
+          shape, mortar_shape_function, mortar_shape_function_rotation);
     }
   }
   else if (contact_discretization ==

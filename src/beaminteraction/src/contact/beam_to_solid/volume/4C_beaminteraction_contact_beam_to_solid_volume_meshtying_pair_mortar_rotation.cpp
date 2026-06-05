@@ -11,7 +11,6 @@
 #include "4C_beam3_triad_interpolation_local_rotation_vectors.hpp"
 #include "4C_beaminteraction_calc_utils.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_mortar_manager.hpp"
-#include "4C_beaminteraction_contact_beam_to_solid_mortar_shape_functions_dual_hermite.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_utils.hpp"
 #include "4C_beaminteraction_contact_beam_to_solid_volume_meshtying_params.hpp"
 #include "4C_beaminteraction_contact_params.hpp"
@@ -260,10 +259,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
       Core::LinAlg::inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GeometryPair::ShapeFunctionData<BeamInteraction::HermiteDual> mortar_shape_function_data;
-      mortar_shape_function_data.ref_length_ = this->ele1pos_.shape_function_data_.ref_length_;
       GeometryPair::EvaluateShapeFunction<MortarRot>::evaluate(
-          lambda_shape_functions, projected_gauss_point.get_eta(), mortar_shape_function_data);
+          lambda_shape_functions, projected_gauss_point.get_eta());
       for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
@@ -556,10 +553,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation<Beam, Solid, 
       Core::LinAlg::inverse(T_solid_inv);
 
       // Evaluate shape functions.
-      GeometryPair::ShapeFunctionData<MortarRot> shape_function_data;
-      GeometryPair::SetShapeFunctionData<MortarRot>::set(shape_function_data, this->element1());
       GeometryPair::EvaluateShapeFunction<MortarRot>::evaluate(
-          lambda_shape_functions, projected_gauss_point.get_eta(), shape_function_data);
+          lambda_shape_functions, projected_gauss_point.get_eta());
       for (unsigned int i_node = 0; i_node < MortarRot::n_nodes_; i_node++)
         for (unsigned int i_dim = 0; i_dim < 3; i_dim++)
           lambda_shape_functions_full(i_dim, 3 * i_node + i_dim) = lambda_shape_functions(i_node);
@@ -664,10 +659,6 @@ namespace BeamInteraction
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line2);
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line3);
   initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(t_line4, t_line4);
-
-  initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(HermiteDual, t_line2);
-  initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(HermiteDual, t_line3);
-  initialize_template_beam_to_solid_volume_meshtying_pair_mortar_rotation(HermiteDual, t_line4);
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
