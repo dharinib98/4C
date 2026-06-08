@@ -10,6 +10,7 @@
 
 #include "4C_config.hpp"
 
+#include "4C_beam3_base.hpp"
 #include "4C_fem_general_utils_fem_shapefunctions.hpp"
 #include "4C_geometry_pair_element.hpp"
 #include "4C_geometry_pair_element_shape_functions.hpp"
@@ -30,6 +31,24 @@ namespace GeometryPair
   {
     double ref_length_;
   };
+
+  template <>
+  struct SetShapeFunctionData<BeamInteraction::HermiteDual>
+  {
+    static void set(ShapeFunctionData<BeamInteraction::HermiteDual>& shape_function_data,
+        const Core::Elements::Element* element)
+    {
+      const auto* beam_element = dynamic_cast<const Discret::Elements::Beam3Base*>(element);
+      if (beam_element == nullptr)
+        FOUR_C_THROW(
+            "The element pointer has to point to a valid beam element when evaluating the shape "
+            "function data of a dual Hermite mortar shape function, as we need to get "
+            "RefLength()!");
+
+      shape_function_data.ref_length_ = beam_element->ref_length();
+    }
+  };
+
 
   template <>
   struct EvaluateShapeFunction<BeamInteraction::HermiteDual>
