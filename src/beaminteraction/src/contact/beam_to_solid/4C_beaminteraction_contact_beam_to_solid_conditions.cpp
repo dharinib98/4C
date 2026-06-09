@@ -340,13 +340,6 @@ BeamInteraction::create_beam_to_solid_volume_pair_shape_no_nurbs(const Core::FE:
   }
 }
 
-template <template <typename...> class T>
-inline constexpr bool is_rotation_pair_v = false;
-
-template <>
-inline constexpr bool
-    is_rotation_pair_v<BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation> = true;
-
 /**
  *
  */
@@ -370,7 +363,7 @@ BeamInteraction::create_beam_to_solid_volume_pair_mortar(const Core::FE::CellTyp
           GeometryPair::t_line4>(shape, other_mortar_shape_function...);
     case BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite:
     {
-      if constexpr (!is_rotation_pair_v<BtsClass>)
+      if constexpr (!BeamInteraction::is_rotation_pair_v<BtsClass>)
       {
         return create_beam_to_solid_volume_pair_mortar<BtsClass, BtsMortarTemplateArguments...,
             BeamInteraction::HermiteDual>(shape, other_mortar_shape_function...);

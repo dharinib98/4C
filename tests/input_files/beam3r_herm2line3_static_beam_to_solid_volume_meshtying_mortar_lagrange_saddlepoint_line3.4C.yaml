@@ -1,5 +1,6 @@
 TITLE:
-  - "Description: Simulate a beam coupled to a solid via penalty mortar coupling."
+  - "Description: Simulate a beam coupled to a solid via mortar coupling using Lagrange multipler method
+    with the saddlepoint variant."
   - "The shape functions for the Lagrange multplicators are line3."
 PROBLEM TYPE:
   PROBLEMTYPE: "Structure"

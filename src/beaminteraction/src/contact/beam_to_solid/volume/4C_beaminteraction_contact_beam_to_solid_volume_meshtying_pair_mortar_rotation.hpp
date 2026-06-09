@@ -127,6 +127,20 @@ namespace BeamInteraction
         Core::LinAlg::Matrix<Solid::n_dof_, n_dof_rot_, double>& local_stiff_SB,
         Core::LinAlg::Matrix<Solid::n_dof_, Solid::n_dof_, double>& local_stiff_SS) const;
   };
+
+  /**
+   * \brief indicates whether a beam-to-solid volume mortar pair includes rotational coupling
+   */
+  template <template <typename...> class T>
+  inline constexpr bool is_rotation_pair_v = false;
+
+  /**
+   * \brief Mark the rotational mortar pair implementation as a rotational coupling pair.
+   */
+  template <>
+  inline constexpr bool
+      is_rotation_pair_v<BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation> = true;
+
 }  // namespace BeamInteraction
 
 FOUR_C_NAMESPACE_CLOSE
