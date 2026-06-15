@@ -77,6 +77,10 @@ namespace BeamInteraction
     BeamToSolid::BeamToSolidLagrangeFormulation lagrange_formulation =
         BeamToSolid::BeamToSolidLagrangeFormulation::none;
 
+    //! Mortar shape function used for beam-to-solid coupling.
+    BeamToSolid::BeamToSolidMortarShapefunctions mortar_shape_function =
+        BeamToSolid::BeamToSolidMortarShapefunctions::none;
+
     //! Penalty parameter for positional coupling.
     double penalty_parameter_translational = 0.0;
 

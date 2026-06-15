@@ -548,6 +548,43 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_and_assemble_global_cou
   kappa_->complete();
   lambda_active_->complete();
   constraint_->complete();
+
+  if (parameters_.mortar_shape_function ==
+      BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite)
+  {
+    const double tol = 1.0e-13;
+
+    for (int lid = 0; lid < lambda_dof_rowmap_->num_my_elements(); ++lid)
+    {
+      const int lambda_gid = lambda_dof_rowmap_->gid(lid);
+
+      const int num_entries = constraint_lin_beam_->num_global_entries(lambda_gid);
+
+      std::vector<double> values(num_entries);
+      std::vector<int> col_gids(num_entries);
+
+      int num_extracted = 0;
+
+      constraint_lin_beam_->extract_global_row_copy(
+          lambda_gid, num_entries, num_extracted, values.data(), col_gids.data());
+
+      int nnz_in_row = 0;
+
+      for (int k = 0; k < num_extracted; ++k)
+      {
+        if (std::abs(values[k]) > tol)
+        {
+          ++nnz_in_row;
+        }
+      }
+
+      if (nnz_in_row != 1)
+      {
+        FOUR_C_THROW(
+            "Row {} has {} nonzero entries, but expected exactly one.", lambda_gid, nnz_in_row);
+      }
+    }
+  }
 }
 
 /**
