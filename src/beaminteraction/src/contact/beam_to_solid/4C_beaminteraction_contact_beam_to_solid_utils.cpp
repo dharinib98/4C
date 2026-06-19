@@ -830,6 +830,51 @@ void BeamInteraction::assemble_local_mortar_contributions(
       Mortar::n_dof_, lambda_gid_pos.data(), local_kappa_active.data());
 }
 
+/**
+ *
+ */
+void BeamInteraction::BeamToSolidMortarManager::check_diagonal_like_structure(
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& D_matrix) const
+{
+  const double atol = 1.0e-14;
+  const double rtol = 1.0e-12;
+
+
+  for (int lid = 0; lid < D_matrix->row_map().num_my_elements(); ++lid)
+  {
+    const int row_gid = D_matrix->row_map().gid(lid);
+
+    int num_extracted = 0;
+    double* values = nullptr;
+    int* col_lids = nullptr;
+
+    D_matrix->extract_my_row_view(lid, num_extracted, values, col_lids);
+
+    if (num_extracted == 0 || num_extracted == 1)
+    {
+      continue;
+    }
+
+    int nnz_in_row = 0;
+    double row_scale = 0.0;
+
+    for (int k = 0; k < num_extracted; ++k)
+    {
+      row_scale = std::max(row_scale, std::abs(values[k]));
+      const double tol = atol + rtol * row_scale;
+      if (std::abs(values[k]) > tol)
+      {
+        ++nnz_in_row;
+      }
+    }
+
+    if (nnz_in_row != 1)
+    {
+      FOUR_C_THROW("Row {} has {} nonzero entries, but expected exactly one.", row_gid, nnz_in_row);
+    }
+  }
+}
+
 
 /**
  * Explicit template initialization of template functions.
