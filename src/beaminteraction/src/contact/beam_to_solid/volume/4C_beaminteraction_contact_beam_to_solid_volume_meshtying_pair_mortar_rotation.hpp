@@ -129,14 +129,11 @@ namespace BeamInteraction
   };
 
   /**
-   * \brief indicates whether a beam-to-solid volume mortar pair includes rotational coupling
+   * \brief Compile time flag to check whether a beam-to-solid volume mortar pair includes
+   * rotational coupling
    */
   template <template <typename...> class T>
   inline constexpr bool is_rotation_pair_v = false;
-
-  /**
-   * \brief Mark the rotational mortar pair implementation as a rotational coupling pair.
-   */
   template <>
   inline constexpr bool
       is_rotation_pair_v<BeamInteraction::BeamToSolidVolumeMeshtyingPairMortarRotation> = true;

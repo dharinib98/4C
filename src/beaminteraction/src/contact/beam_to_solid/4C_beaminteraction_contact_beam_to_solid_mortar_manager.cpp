@@ -510,6 +510,51 @@ double BeamInteraction::BeamToSolidMortarManager::get_energy() const
 /**
  *
  */
+void BeamInteraction::BeamToSolidMortarManager::check_diagonal_like_structure(
+    const std::shared_ptr<Core::LinAlg::SparseMatrix>& D_matrix) const
+{
+  const double atol = 1.0e-14;
+  const double rtol = 1.0e-12;
+
+
+  for (int lid = 0; lid < D_matrix->row_map().num_my_elements(); ++lid)
+  {
+    const int row_gid = D_matrix->row_map().gid(lid);
+
+    int num_extracted = 0;
+    double* values = nullptr;
+    int* col_lids = nullptr;
+
+    D_matrix->extract_my_row_view(lid, num_extracted, values, col_lids);
+
+    if (num_extracted == 0 || num_extracted == 1)
+    {
+      continue;
+    }
+
+    int nnz_in_row = 0;
+    double row_scale = 0.0;
+
+    for (int k = 0; k < num_extracted; ++k)
+    {
+      row_scale = std::max(row_scale, std::abs(values[k]));
+      const double tol = atol + rtol * row_scale;
+      if (std::abs(values[k]) > tol)
+      {
+        ++nnz_in_row;
+      }
+    }
+
+    if (nnz_in_row != 1)
+    {
+      FOUR_C_THROW("Row {} has {} nonzero entries, but expected exactly one.", row_gid, nnz_in_row);
+    }
+  }
+}
+
+/**
+ *
+ */
 void BeamInteraction::BeamToSolidMortarManager::evaluate_and_assemble_global_coupling_contributions(
     const std::shared_ptr<const Core::LinAlg::Vector<double>>& displacement_vector)
 {
@@ -549,41 +594,10 @@ void BeamInteraction::BeamToSolidMortarManager::evaluate_and_assemble_global_cou
   lambda_active_->complete();
   constraint_->complete();
 
-  if (parameters_.mortar_shape_function ==
-      BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite)
+  if (parameters_.check_diagonal_d_matrix)
   {
-    const double tol = 1.0e-13;
-
-    for (int lid = 0; lid < lambda_dof_rowmap_->num_my_elements(); ++lid)
-    {
-      const int lambda_gid = lambda_dof_rowmap_->gid(lid);
-
-      const int num_entries = constraint_lin_beam_->num_global_entries(lambda_gid);
-
-      std::vector<double> values(num_entries);
-      std::vector<int> col_gids(num_entries);
-
-      int num_extracted = 0;
-
-      constraint_lin_beam_->extract_global_row_copy(
-          lambda_gid, num_entries, num_extracted, values.data(), col_gids.data());
-
-      int nnz_in_row = 0;
-
-      for (int k = 0; k < num_extracted; ++k)
-      {
-        if (std::abs(values[k]) > tol)
-        {
-          ++nnz_in_row;
-        }
-      }
-
-      if (nnz_in_row != 1)
-      {
-        FOUR_C_THROW(
-            "Row {} has {} nonzero entries, but expected exactly one.", lambda_gid, nnz_in_row);
-      }
-    }
+    check_diagonal_like_structure(constraint_lin_beam_);
+    check_diagonal_like_structure(force_beam_lin_lambda_);
   }
 }
 

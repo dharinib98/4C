@@ -164,6 +164,10 @@ BeamInteraction::BeamToSolidCondition::create_indirect_assembly_manager(
       mortar_manager_params.n_lambda_node_translational = n_lambda_node_pos;
       mortar_manager_params.n_lambda_element_translational = n_lambda_element_pos;
 
+      mortar_manager_params.check_diagonal_d_matrix =
+          beam_to_solid_params_->get_mortar_shape_function_type() ==
+          BeamToSolid::BeamToSolidMortarShapefunctions::dual_hermite;
+
       if (beam_to_solid_params_->is_rotational_coupling())
       {
         // Get the mortar shape functions for rotational coupling
