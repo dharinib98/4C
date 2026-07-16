@@ -868,7 +868,7 @@ void BeamInteraction::check_diagonal_like_structure(
       }
     }
 
-    if (nnz_in_row != 1)
+    if (nnz_in_row > 1)
     {
       FOUR_C_THROW("Row {} has {} nonzero entries, but expected exactly one.", row_gid, nnz_in_row);
     }
