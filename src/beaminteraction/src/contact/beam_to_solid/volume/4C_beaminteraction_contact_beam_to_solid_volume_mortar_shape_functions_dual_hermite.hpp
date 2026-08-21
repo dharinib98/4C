@@ -80,11 +80,11 @@ namespace GeometryPair
 
       Core::LinAlg::Matrix<1, n_shape, double> N_primal(Core::LinAlg::Initialization::zero);
 
-      constexpr std::array<double, 4> gauss_points{
-          -0.8611363115940526, -0.3399810435848563, 0.3399810435848563, 0.8611363115940526};
+      constexpr std::array<double, 6> gauss_points{-0.932469514203152, -0.661209386466264,
+          -0.238619186083197, 0.238619186083197, 0.661209386466264, 0.932469514203152};
 
-      constexpr std::array<double, 4> gauss_weights{
-          0.3478548451374539, 0.6521451548625461, 0.6521451548625461, 0.3478548451374539};
+      constexpr std::array<double, 6> gauss_weights{0.171324492379170, 0.360761573048139,
+          0.467913934572691, 0.467913934572691, 0.360761573048139, 0.171324492379170};
 
       for (unsigned int i_gp = 0; i_gp < gauss_points.size(); ++i_gp)
       {
