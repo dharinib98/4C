@@ -54,24 +54,22 @@ namespace GeometryPair
   };
 
   template <typename Mortar>
-  struct SetPairDependentShapeFunctionData
+  struct SetBeamDependentShapeFunctionData
   {
-    template <typename Beam, typename Segments, typename BeamReferencePosition,
-        typename BeamShapeFunctionData>
-    static void set(ShapeFunctionData<Mortar>&, const Segments&, const BeamReferencePosition&,
-        const BeamShapeFunctionData&)
+    template <typename Beam, typename BeamReferencePosition, typename BeamShapeFunctionData>
+    static void set(
+        ShapeFunctionData<Mortar>&, const BeamReferencePosition&, const BeamShapeFunctionData&)
     {
-      // No pair-dependent data required for standard mortar shape functions.
     }
   };
 
+
   template <>
-  struct SetPairDependentShapeFunctionData<BeamInteraction::t_hermite_dual>
+  struct SetBeamDependentShapeFunctionData<BeamInteraction::t_hermite_dual>
   {
-    template <typename Beam, typename Segments, typename BeamReferencePosition,
-        typename BeamShapeFunctionData>
+    template <typename Beam, typename BeamReferencePosition, typename BeamShapeFunctionData>
     static void set(ShapeFunctionData<BeamInteraction::t_hermite_dual>& mortar_data,
-        const Segments& segments, const BeamReferencePosition& beam_reference_position,
+        const BeamReferencePosition& beam_reference_position,
         const BeamShapeFunctionData& beam_shape_function_data)
     {
       constexpr unsigned int n_shape = 4;
@@ -82,34 +80,38 @@ namespace GeometryPair
 
       Core::LinAlg::Matrix<1, n_shape, double> N_primal(Core::LinAlg::Initialization::zero);
 
-      for (const auto& segment : segments)
+      constexpr std::array<double, 4> gauss_points{
+          -0.8611363115940526, -0.3399810435848563, 0.3399810435848563, 0.8611363115940526};
+
+      constexpr std::array<double, 4> gauss_weights{
+          0.3478548451374539, 0.6521451548625461, 0.6521451548625461, 0.3478548451374539};
+
+      for (unsigned int i_gp = 0; i_gp < gauss_points.size(); ++i_gp)
       {
-        const double segment_factor = 0.5 * segment.get_segment_length();
+        const double eta = gauss_points[i_gp];
 
-        for (const auto& gauss_point : segment.get_projection_points())
+        GeometryPair::evaluate_position_derivative1<Beam>(
+            eta, beam_reference_position, dr_beam_ref);
+
+        const double integration_factor = gauss_weights[i_gp] * dr_beam_ref.norm2();
+
+        N_primal.clear();
+        GeometryPair::EvaluateShapeFunction<Beam>::evaluate(
+            N_primal, eta, beam_shape_function_data);
+
+        for (unsigned int j = 0; j < n_shape; ++j)
         {
-          const double eta = gauss_point.get_eta();
+          // D_jj = integral N_j J d eta
+          D(j, j) += N_primal(j) * integration_factor;
 
-          GeometryPair::evaluate_position_derivative1<Beam>(
-              eta, beam_reference_position, dr_beam_ref);
-
-          const double integration_factor =
-              gauss_point.get_gauss_weight() * dr_beam_ref.norm2() * segment_factor;
-
-          GeometryPair::EvaluateShapeFunction<Beam>::evaluate(
-              N_primal, eta, beam_shape_function_data);
-
-          for (unsigned int j = 0; j < n_shape; ++j)
+          // M_jk = integral N_j N_k J d eta
+          for (unsigned int k = 0; k < n_shape; ++k)
           {
-            D(j, j) += N_primal(j) * integration_factor;
-
-            for (unsigned int k = 0; k < n_shape; ++k)
-            {
-              M(j, k) += N_primal(j) * N_primal(k) * integration_factor;
-            }
+            M(j, k) += N_primal(j) * N_primal(k) * integration_factor;
           }
         }
       }
+
 
       Core::LinAlg::Matrix<n_shape, n_shape, double> M_transpose(
           Core::LinAlg::Initialization::zero);
@@ -149,22 +151,19 @@ namespace GeometryPair
       const T xi2 = xi * xi;
       const T xi3 = xi2 * xi;
 
-      Core::LinAlg::Matrix<1, 4, T> N_primal(Core::LinAlg::Initialization::zero);
+      Core::LinAlg::Matrix<4, 1, T> N_primal(Core::LinAlg::Initialization::zero);
+      Core::LinAlg::Matrix<4, 1, T> N_dual(Core::LinAlg::Initialization::zero);
 
       N_primal(0) = 0.25 * (2.0 - 3.0 * xi + xi3);
-      N_primal(1) = (shape_function_data.ref_length_) / 8.0 * (1.0 - xi - xi2 + xi3);
+      N_primal(1) = shape_function_data.ref_length_ / 8.0 * (1.0 - xi - xi2 + xi3);
       N_primal(2) = 0.25 * (2.0 + 3.0 * xi - xi3);
-      N_primal(3) = (shape_function_data.ref_length_) / 8.0 * (-1.0 - xi + xi2 + xi3);
+      N_primal(3) = shape_function_data.ref_length_ / 8.0 * (-1.0 - xi + xi2 + xi3);
 
-      // Phi_j = sum_k A_jk N_primal_k.
-      N.clear();
+      N_dual.multiply(shape_function_data.dual_transformation_, N_primal);
 
-      for (unsigned int j = 0; j < 4; ++j)
+      for (unsigned int i = 0; i < 4; ++i)
       {
-        for (unsigned int k = 0; k < 4; ++k)
-        {
-          N(j) += shape_function_data.dual_transformation_(j, k) * N_primal(k);
-        }
+        N(i) = N_dual(i);
       }
     }
   };
@@ -179,6 +178,14 @@ namespace GeometryPair
       constexpr auto max_precision{std::numeric_limits<double>::digits10 + 1};
       out << std::setprecision(max_precision);
       out << "\nElement reference length: " << element_data.shape_function_data_.ref_length_;
+      out << "\nElement state vector: ";
+      element_data.element_position_.print(out);
+
+      out << "\nElement reference length: " << element_data.shape_function_data_.ref_length_;
+
+      out << "\nDual transformation matrix:\n";
+      element_data.shape_function_data_.dual_transformation_.print(out);
+
       out << "\nElement state vector: ";
       element_data.element_position_.print(out);
     }

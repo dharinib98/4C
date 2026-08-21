@@ -334,9 +334,8 @@ void BeamInteraction::BeamToSolidVolumeMeshtyingPairMortar<Beam, Solid, Mortar>:
       N_solid.clear();
       GeometryPair::ShapeFunctionData<Mortar> shape_function_data;
       GeometryPair::SetShapeFunctionData<Mortar>::set(shape_function_data, this->element1());
-      GeometryPair::SetPairDependentShapeFunctionData<Mortar>::template set<Beam>(
-          shape_function_data, this->line_to_3D_segments_, this->ele1posref_,
-          this->ele1pos_.shape_function_data_);
+      GeometryPair::SetBeamDependentShapeFunctionData<Mortar>::template set<Beam>(
+          shape_function_data, this->ele1posref_, this->ele1pos_.shape_function_data_);
       GeometryPair::EvaluateShapeFunction<Mortar>::evaluate(
           N_mortar, projected_gauss_point.get_eta(), shape_function_data);
       GeometryPair::EvaluateShapeFunction<Beam>::evaluate(
